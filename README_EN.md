@@ -103,9 +103,12 @@ Corresponding Emoji symbols are as follows:
 | 😜 | silly        |
 | 🙄 | confused     |
 
-Users can choose preset emoji packs, which include:
-- Twemoji 32x32 PNG (located in `share/twemoji32`)
-- Twemoji 64x64 PNG (located in `share/twemoji64`)
+Users can choose preset emoji packs (now sized and counted per pack automatically):
+- Twemoji 32x32 PNG / 64x64 PNG
+- Noto Emoji 64x64 GIF / 128x128 GIF (21 emojis)
+- Kotty 64x64 GIF (5 emojis), Kotty 128x128 GIF (4 emojis), Kotty 240x240 GIF (3 emojis)
+
+Preview cards adapt to size: >128px show 4 samples, 240px show 2 samples. Packaging uses each preset’s declared emoji list and file extension.
 
 Users can also customize emoji packs:
 - A uniform image size (width x height) must be set, not exceeding the screen resolution.
@@ -228,6 +231,5 @@ Example 2:
     ]
 }
 ```
-
 
 

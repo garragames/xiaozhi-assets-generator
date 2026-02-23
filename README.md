@@ -101,14 +101,17 @@
 | 😜 | silly        |
 | 🙄 | confused     |
 
-用户可以选择预设表情包，预设表情有：
-- Twemoji 32x32 PNG (位于 `share/twemoji32`)
-- Twemoji 64x64 PNG (位于 `share/twemoji64`)
+用户可以选择预设表情包（扩展了多种尺寸与数量，自动按各包实际文件数打包）：
+- Twemoji 32x32 PNG / 64x64 PNG
+- Noto Emoji 64x64 GIF / 128x128 GIF（21 个表情）
+- Kotty 64x64 GIF（5 个表情），Kotty 128x128 GIF（4 个表情），Kotty 240x240 GIF（3 个表情）
+
+UI 预览自动根据尺寸裁剪展示：大于 128px 显示 4 张预览，240px 级别显示 2 张预览；打包时按预设元数据的实际表情列表写入 index.json 与 SPIFFS。
 
 用户也可以自定义表情包：
 - 需要设置一个统一的图片大小 width x height，不能大于屏幕分辨率。
 - 选择动态图片（GIF）或静态透明背景图片（PNG）格式
-- 必须要提供一张默认图片作为 neutral 表情（大小会自动适配为 widght x height）
+- 必须要提供一张默认图片作为 neutral 表情（大小会自动适配为 width x height）
 - 其他表情为可选，如果用户不修改其他表情图片，则默认使用 neutral 表情来显示。
 
 ### Tab 4：聊天背景
@@ -226,4 +229,3 @@
     ]
 }
 ```
-
