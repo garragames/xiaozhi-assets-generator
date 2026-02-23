@@ -1,13 +1,13 @@
 /**
- * AssetsBuilder 类
- * 用于处理小智 AI 自定义主题的 assets.bin 打包生成
+ * Clase AssetsBuilder
+ * Se utiliza para procesar la generación del paquete assets.bin para temas personalizados de IA de Xiaozhi.
  * 
- * 主要功能：
- * - 配置验证和处理
- * - 生成 index.json 内容
- * - 管理资源文件
- * - 与后端 API 交互生成 assets.bin
- * - 集成浏览器端字体转换功能
+ * Funciones principales:
+ * - Validación y procesamiento de la configuración
+ * - Generación del contenido de index.json
+ * - Gestión de archivos de recursos
+ * - Interacción con la API de back-end para generar assets.bin
+ * - Integración de la función de conversión de fuentes del lado del navegador
  */
 
 import browserFontConverter from './font_conv/BrowserFontConverter.js'
@@ -19,26 +19,26 @@ import configStorage from './ConfigStorage.js'
 class AssetsBuilder {
   constructor() {
     this.config = null
-    this.resources = new Map() // 存储资源文件
-    this.tempFiles = [] // 临时文件列表
-    this.fontConverterBrowser = browserFontConverter // 浏览器端字体转换器
-    this.convertedFonts = new Map() // 缓存转换后的字体
-    this.wakenetPacker = new WakenetModelPacker() // 唤醒词模型打包器
-    this.spiffsGenerator = new SpiffsGenerator() // SPIFFS 生成器
+    this.resources = new Map() // Almacenar archivos de recursos
+    this.tempFiles = [] // Lista de archivos temporales
+    this.fontConverterBrowser = browserFontConverter // Convertidor de fuentes del lado del navegador
+    this.convertedFonts = new Map() // Caché de fuentes convertidas
+    this.wakenetPacker = new WakenetModelPacker() // Empaquetador de modelos de palabras de activación
+    this.spiffsGenerator = new SpiffsGenerator() // Generador de SPIFFS
     this.gifScaler = new WasmGifScaler({ 
       quality: 30, 
       debug: true,
-      scalingMode: 'auto',  // 自动选择最佳缩放模式
-      optimize: true,       // 启用 GIF 优化
-      optimizationLevel: 2  // 优化级别 (1-3)
-    }) // WASM GIF 缩放器
-    this.configStorage = configStorage // 配置存储管理器
-    this.autoSaveEnabled = true // 是否启用自动保存
+      scalingMode: 'auto',  // Seleccionar automáticamente el mejor modo de escalado
+      optimize: true,       // Habilitar la optimización de GIF
+      optimizationLevel: 2  // Nivel de optimización (1-3)
+    }) // Escalador de GIF WASM
+    this.configStorage = configStorage // Gestor de almacenamiento de configuración
+    this.autoSaveEnabled = true // Si el guardado automático está habilitado
   }
 
   /**
-   * 设置配置对象
-   * @param {Object} config - 完整的配置对象
+   * Establece el objeto de configuración.
+   * @param {Object} config - El objeto de configuración completo
    */
   setConfig(config, options = {}) {
     const strict = options?.strict ?? true
@@ -50,27 +50,27 @@ class AssetsBuilder {
   }
 
   /**
-   * 验证配置对象
-   * @param {Object} config - 待验证的配置对象
-   * @returns {boolean} 验证结果
+   * Valida el objeto de configuración.
+   * @param {Object} config - El objeto de configuración a validar
+   * @returns {boolean} El resultado de la validación
    */
   validateConfig(config) {
     if (!config) return false
     
-    // 验证芯片配置
+    // Validar la configuración del chip
     if (!config.chip?.model) {
       console.error('Missing chip model configuration')
       return false
     }
 
-    // 验证显示配置
+    // Validar la configuración de la pantalla
     const display = config.chip.display
     if (!display?.width || !display?.height) {
       console.error('Missing display resolution configuration')
       return false
     }
 
-    // 验证字体配置
+    // Validar la configuración de la fuente
     const font = config.theme?.font
     if (font?.type === 'preset' && !font.preset) {
       console.error('Preset font configuration is incomplete')
@@ -85,11 +85,11 @@ class AssetsBuilder {
   }
 
   /**
-   * 添加资源文件
-   * @param {string} key - 资源键名
-   * @param {File|Blob} file - 文件对象
-   * @param {string} filename - 文件名
-   * @param {string} resourceType - 资源类型 (font, emoji, background)
+   * Añade un archivo de recurso.
+   * @param {string} key - Clave del recurso
+   * @param {File|Blob} file - Objeto de archivo
+   * @param {string} filename - Nombre del archivo
+   * @param {string} resourceType - Tipo de recurso (font, emoji, background)
    */
   addResource(key, file, filename, resourceType = 'other') {
     this.resources.set(key, {
@@ -101,7 +101,7 @@ class AssetsBuilder {
       resourceType
     })
 
-    // 自动保存文件到存储
+    // Guardar automáticamente el archivo en el almacenamiento
     if (this.autoSaveEnabled && file instanceof File) {
       this.saveFileToStorage(key, file, resourceType).catch(error => {
         console.warn(`Auto-saving file ${filename} failed:`, error)
@@ -112,10 +112,10 @@ class AssetsBuilder {
   }
 
   /**
-   * 保存文件到存储
-   * @param {string} key - 资源键名
-   * @param {File} file - 文件对象
-   * @param {string} resourceType - 资源类型
+   * Guarda un archivo en el almacenamiento.
+   * @param {string} key - Clave del recurso
+   * @param {File} file - Objeto de archivo
+   * @param {string} resourceType - Tipo de recurso
    * @returns {Promise<void>}
    */
   async saveFileToStorage(key, file, resourceType) {
@@ -129,9 +129,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 从存储中恢复资源文件
-   * @param {string} key - 资源键名
-   * @returns {Promise<boolean>} 是否成功恢复
+   * Restaura un archivo de recurso desde el almacenamiento.
+   * @param {string} key - Clave del recurso
+   * @returns {Promise<boolean>} Si se restauró correctamente
    */
   async restoreResourceFromStorage(key) {
     try {
@@ -157,8 +157,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 恢复所有相关的资源文件
-   * @param {Object} config - 配置对象
+   * Restaura todos los archivos de recursos relevantes.
+   * @param {Object} config - Objeto de configuración
    * @returns {Promise<void>}
    */
   async restoreAllResourcesFromStorage(config) {
@@ -166,7 +166,7 @@ class AssetsBuilder {
 
     const restoredFiles = []
 
-    // 恢复自定义字体文件（无论当前字体类型是什么，都尝试恢复）
+    // Restaurar el archivo de fuente personalizado (independientemente del tipo de fuente actual, intentar restaurar)
     if (config.theme?.font?.custom && config.theme.font.custom?.file === null) {
       const fontKey = 'custom_font'
       if (await this.restoreResourceFromStorage(fontKey)) {
@@ -179,31 +179,31 @@ class AssetsBuilder {
       }
     }
 
-    // 恢复自定义表情图片（支持新的 hash 去重结构）
+    // Restaurar imágenes de emojis personalizadas (compatible con la nueva estructura de deduplicación de hash)
     if (config.theme?.emoji?.type === 'custom' && config.theme.emoji.custom) {
       const emojiCustom = config.theme.emoji.custom
       const emotionMap = emojiCustom.emotionMap || {}
       const fileMap = emojiCustom.fileMap || {}
       const images = emojiCustom.images || {}
       
-      // 如果存在新结构（emotionMap 和 fileMap），使用新结构恢复
+      // Si existe una nueva estructura (emotionMap y fileMap), usar la nueva estructura para restaurar
       if (Object.keys(emotionMap).length > 0 || Object.keys(fileMap).length > 0) {
-        // 收集所有需要恢复的 hash
+        // Recopilar todos los hashes que necesitan ser restaurados
         const hashesToRestore = new Set()
         
-        // 从 fileMap 中收集所有 hash
+        // Recopilar todos los hashes de fileMap
         for (const hash of Object.keys(fileMap)) {
           if (fileMap[hash] === null) {
             hashesToRestore.add(hash)
           }
         }
         
-        // 恢复每个唯一的文件（按 hash）
+        // Restaurar cada archivo único (por hash)
         for (const hash of hashesToRestore) {
           let fileKey = `hash_${hash}`
           let restored = await this.restoreResourceFromStorage(fileKey)
           
-          // 如果新格式恢复失败，尝试旧格式（兼容性处理）
+          // Si la restauración del nuevo formato falla, intentar el formato antiguo (manejo de compatibilidad)
           if (!restored) {
             const oldKey = `emoji_hash_${hash}`
             restored = await this.restoreResourceFromStorage(oldKey)
@@ -215,15 +215,15 @@ class AssetsBuilder {
           if (restored) {
             const resource = this.resources.get(fileKey)
             if (resource) {
-              // 更新 fileMap
+              // Actualizar fileMap
               fileMap[hash] = resource.file
               
-              // 找到所有使用该 hash 的表情
+              // Encontrar todos los emojis que usan este hash
               const emotionsUsingHash = Object.entries(emotionMap)
                 .filter(([_, h]) => h === hash)
                 .map(([emotion, _]) => emotion)
               
-              // 更新所有使用该文件的表情的 images
+              // Actualizar las imágenes de todos los emojis que usan este archivo
               emotionsUsingHash.forEach(emotion => {
                 images[emotion] = resource.file
               })
@@ -233,18 +233,18 @@ class AssetsBuilder {
           }
         }
         
-        // 直接修改原始对象（保持响应式）
-        // 逐个更新 fileMap
+        // Modificar directamente el objeto original (mantener la reactividad)
+        // Actualizar fileMap uno por uno
         Object.keys(fileMap).forEach(hash => {
           config.theme.emoji.custom.fileMap[hash] = fileMap[hash]
         })
         
-        // 逐个更新 images
+        // Actualizar imágenes una por una
         Object.keys(images).forEach(emotion => {
           config.theme.emoji.custom.images[emotion] = images[emotion]
         })
       } else {
-        // 兼容旧结构：逐个恢复表情文件
+        // Compatibilidad con la estructura antigua: restaurar los archivos de emojis uno por uno
         for (const [emojiName, file] of Object.entries(images)) {
           if (file === null) {
             const emojiKey = `emoji_${emojiName}`
@@ -261,7 +261,7 @@ class AssetsBuilder {
       }
     }
 
-    // 恢复背景图片
+    // Restaurar imágenes de fondo
     if (config.theme?.skin?.light?.backgroundType === 'image' && config.theme.skin.light.backgroundImage === null) {
       const bgKey = 'background_light'
       if (await this.restoreResourceFromStorage(bgKey)) {
@@ -284,7 +284,7 @@ class AssetsBuilder {
       }
     }
 
-    // 恢复转换后的字体数据
+    // Restaurar los datos de la fuente convertida
     try {
       const fontInfo = this.getFontInfo()
       if (fontInfo && fontInfo.type === 'custom') {
@@ -305,8 +305,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取唤醒词模型信息
-   * @returns {Object|null} 唤醒词模型信息
+   * Obtiene la información del modelo de palabra de activación.
+   * @returns {Object|null} Información del modelo de palabra de activación
    */
   getWakewordModelInfo() {
     if (!this.config || !this.config.chip || !this.config.theme) {
@@ -319,7 +319,7 @@ class AssetsBuilder {
     if (!wakeword || wakeword.type === 'none') return null
 
     if (wakeword.type === 'preset') {
-      // 根据芯片型号确定唤醒词模型类型
+      // Determinar el tipo de modelo de palabra de activación según el modelo de chip
       const isC3OrC6 = chipModel === 'esp32c3' || chipModel === 'esp32c6'
       const modelType = isC3OrC6 ? 'WakeNet9s' : 'WakeNet9'
       
@@ -341,8 +341,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取字体信息
-   * @returns {Object|null} 字体信息
+   * Obtiene la información de la fuente.
+   * @returns {Object|null} Información de la fuente
    */
   getFontInfo() {
     if (!this.config || !this.config.theme || !this.config.theme.font) {
@@ -379,8 +379,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取表情集合信息
-   * @returns {Array} 表情集合信息数组
+   * Obtiene la información de la colección de emojis.
+   * @returns {Array} Array de información de la colección de emojis
    */
   getEmojiCollectionInfo() {
     if (!this.config || !this.config.theme || !this.config.theme.emoji) {
@@ -389,56 +389,56 @@ class AssetsBuilder {
     
     const emoji = this.config.theme.emoji
     const collection = []
+    const defaultPresetEmotions = [
+      'neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying',
+      'loving', 'embarrassed', 'surprised', 'shocked', 'thinking', 'winking',
+      'cool', 'relaxed', 'delicious', 'kissy', 'confident', 'sleepy', 'silly', 'confused'
+    ]
+    const presetMeta = {
+      twemoji32: { size: 32, ext: 'png', emojis: defaultPresetEmotions },
+      twemoji64: { size: 64, ext: 'png', emojis: defaultPresetEmotions },
+      notoemoji64: { size: 64, ext: 'gif', emojis: defaultPresetEmotions },
+      notoemoji128: { size: 128, ext: 'gif', emojis: defaultPresetEmotions },
+      kotty64: { size: 64, ext: 'gif', emojis: ['silly', 'sleepy', 'surprised', 'thinking', 'winking'] },
+      kotty128: { size: 128, ext: 'gif', emojis: ['neutral', 'happy', 'laughing', 'funny'] },
+      kotty240: { size: 240, ext: 'gif', emojis: ['neutral', 'happy', 'funny'] }
+    }
     
     if (emoji.type === 'preset') {
-      // 预设表情包
-      const presetEmojis = [
-        'neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying',
-        'loving', 'embarrassed', 'surprised', 'shocked', 'thinking', 'winking',
-        'cool', 'relaxed', 'delicious', 'kissy', 'confident', 'sleepy', 'silly', 'confused'
-      ]
-      
-      // Preset emoji pack configurations
-      const presetConfigs = {
-        'twemoji32': { size: 32, format: 'png' },
-        'twemoji64': { size: 64, format: 'png' },
-        'noto-emoji_64': { size: 64, format: 'gif' },
-        'noto-emoji_128': { size: 128, format: 'gif' }
-      }
-      
-      const config = presetConfigs[emoji.preset] || { size: 64, format: 'png' }
-      presetEmojis.forEach(name => {
+      // Paquete de emojis preestablecido
+      const { size = 64, ext = 'png', emojis = defaultPresetEmotions } = presetMeta[emoji.preset] || {}
+      emojis.forEach(name => {
         collection.push({
           name,
-          file: `${name}.${config.format}`,
+          file: `${name}.${ext}`,
           source: `preset:${emoji.preset}`,
-          size: { width: config.size, height: config.size }
+          size: { width: parseInt(size), height: parseInt(size) }
         })
       })
     } else if (emoji.type === 'custom') {
-      // 自定义表情包（支持文件去重）
+      // Paquete de emojis personalizado (admite deduplicación de archivos)
       const images = emoji.custom.images || {}
       const emotionMap = emoji.custom.emotionMap || {}
       const fileMap = emoji.custom.fileMap || {}
       const size = emoji.custom.size || { width: 64, height: 64 }
       
-      // 必须使用新的 hash 映射结构
+      // Debe usar la nueva estructura de mapeo de hash
       if (Object.keys(emotionMap).length === 0 || Object.keys(fileMap).length === 0) {
-        console.error('❌ Error: Detected old version of emoji data structure')
-        console.error('Please clear browser cache or reset configuration, then re-upload emoji images')
+        console.error('❌ Error: Se detectó una versión antigua de la estructura de datos de emoji')
+        console.error('Por favor, borre la caché del navegador o restablezca la configuración, luego vuelva a cargar las imágenes de los emojis.')
         throw new Error('Incompatible emoji data structure: Missing fileMap or emotionMap. Please reconfigure emojis.')
       }
       
-      // 创建 hash 到文件名的映射（用于去重）
+      // Crear un mapeo de hash a nombre de archivo (para la deduplicación)
       const hashToFilename = new Map()
       
       Object.entries(emotionMap).forEach(([emotionName, fileHash]) => {
         const file = fileMap[fileHash]
         if (file) {
-          // 为每个唯一的文件 hash 生成一个共享的文件名
+          // Generar un nombre de archivo compartido para cada hash de archivo único
           if (!hashToFilename.has(fileHash)) {
             const fileExtension = file.name ? file.name.split('.').pop().toLowerCase() : 'png'
-            // 使用 hash 前8位作为文件名，确保唯一性
+            // Usar los primeros 8 caracteres del hash como nombre de archivo para garantizar la unicidad
             const sharedFilename = `emoji_${fileHash.substring(0, 8)}.${fileExtension}`
             hashToFilename.set(fileHash, sharedFilename)
           }
@@ -447,19 +447,19 @@ class AssetsBuilder {
           
           collection.push({
             name: emotionName,
-            file: sharedFilename,  // 多个表情可能指向同一个文件
+            file: sharedFilename,  // Varios emojis pueden apuntar al mismo archivo
             source: file,
-            fileHash,  // 保留 hash 信息用于去重处理
+            fileHash,  // Conservar la información del hash para el procesamiento de deduplicación
             size: { ...size }
           })
         }
       })
       
-      console.log(`Emoji deduplication: ${Object.keys(emotionMap).length} emojis using ${hashToFilename.size} different image files`)
+      console.log(`Deduplicación de emojis: ${Object.keys(emotionMap).length} emojis usan ${hashToFilename.size} archivos de imagen diferentes`)
       
-      // 确保至少有 neutral 表情
+      // Asegurarse de que al menos haya un emoji neutral
       if (!collection.find(item => item.name === 'neutral')) {
-        console.warn('Warning: neutral emoji not provided, default image will be used')
+        console.warn('Advertencia: no se proporcionó el emoji neutral, se usará la imagen predeterminada')
       }
     }
     
@@ -467,8 +467,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取皮肤配置信息
-   * @returns {Object} 皮肤配置信息
+   * Obtiene la información de configuración de la piel.
+   * @returns {Object} Información de configuración de la piel
    */
   getSkinInfo() {
     if (!this.config || !this.config.theme || !this.config.theme.skin) {
@@ -478,7 +478,7 @@ class AssetsBuilder {
     const skin = this.config.theme.skin
     const result = {}
     
-    // 处理浅色模式
+    // Procesar el modo claro
     if (skin.light) {
       result.light = {
         text_color: skin.light.textColor || '#000000',
@@ -490,7 +490,7 @@ class AssetsBuilder {
       }
     }
     
-    // 处理深色模式  
+    // Procesar el modo oscuro  
     if (skin.dark) {
       result.dark = {
         text_color: skin.dark.textColor || '#ffffff',
@@ -506,8 +506,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 生成 index.json 内容
-   * @returns {Object} index.json 对象
+   * Genera el contenido de index.json.
+   * @returns {Object} Objeto index.json
    */
   generateIndexJson() {
     if (!this.config) {
@@ -526,12 +526,12 @@ class AssetsBuilder {
       }
     }
 
-    // 添加唤醒词模型
+    // Añadir modelo de palabra de activación
     const wakewordInfo = this.getWakewordModelInfo()
     if (wakewordInfo) {
       indexData.srmodels = wakewordInfo.filename
       
-      // 如果是自定义唤醒词，添加 multinet_model 配置
+      // Si es una palabra de activación personalizada, añadir la configuración de multinet_model
       if (wakewordInfo.type === 'MultiNet' && wakewordInfo.custom) {
         const custom = wakewordInfo.custom
         indexData.multinet_model = {
@@ -549,19 +549,19 @@ class AssetsBuilder {
       }
     }
 
-    // 添加字体信息
+    // Añadir información de la fuente
     const fontInfo = this.getFontInfo()
     if (fontInfo) {
       indexData.text_font = fontInfo.filename
     }
 
-    // 添加皮肤配置
+    // Añadir configuración de la piel
     const skinInfo = this.getSkinInfo()
     if (Object.keys(skinInfo).length > 0) {
       indexData.skin = skinInfo
     }
 
-    // 添加表情集合
+    // Añadir colección de emojis
     const emojiCollection = this.getEmojiCollectionInfo()
     if (emojiCollection.length > 0) {
       indexData.emoji_collection = emojiCollection.map(emoji => ({
@@ -570,12 +570,14 @@ class AssetsBuilder {
       }))
     }
 
+    console.log('Generated index.json data:', JSON.stringify(indexData, null, 2))
+
     return indexData
   }
 
   /**
-   * 准备打包资源
-   * @returns {Object} 打包资源清单
+   * Prepara los recursos para empaquetar.
+   * @returns {Object} Manifiesto de recursos para empaquetar
    */
   preparePackageResources() {
     const resources = {
@@ -584,7 +586,7 @@ class AssetsBuilder {
       config: { ...this.config }
     }
 
-    // 添加唤醒词模型
+    // Añadir modelo de palabra de activación
     const wakewordInfo = this.getWakewordModelInfo()
     if (wakewordInfo && wakewordInfo.name) {
       resources.files.push({
@@ -596,7 +598,7 @@ class AssetsBuilder {
       })
     }
 
-    // 添加字体文件
+    // Añadir archivo de fuente
     const fontInfo = this.getFontInfo()
     if (fontInfo) {
       resources.files.push({
@@ -607,33 +609,33 @@ class AssetsBuilder {
       })
     }
 
-    // 添加表情文件（去重处理）
+    // Añadir archivos de emoji (procesamiento de deduplicación)
     const emojiCollection = this.getEmojiCollectionInfo()
-    const addedFileHashes = new Set()  // 跟踪已添加的文件 hash
+    const addedFileHashes = new Set()  // Rastrear los hashes de los archivos ya añadidos
     
     emojiCollection.forEach(emoji => {
-      // 如果有 fileHash（自定义表情且使用新结构），检查是否已添加
+      // Si tiene fileHash (emoji personalizado y usa la nueva estructura), comprobar si ya se ha añadido
       if (emoji.fileHash) {
         if (addedFileHashes.has(emoji.fileHash)) {
-          // 文件已添加，跳过（但保留在 index.json 的 emoji_collection 中）
+          // Archivo ya añadido, omitir (pero mantener en emoji_collection de index.json)
           console.log(`Skipping duplicate file: ${emoji.name} -> ${emoji.file} (hash: ${emoji.fileHash.substring(0, 8)})`)
           return
         }
         addedFileHashes.add(emoji.fileHash)
       }
       
-      // 添加唯一的文件
+      // Añadir el archivo único
       resources.files.push({
         type: 'emoji',
         name: emoji.name,
         filename: emoji.file,
         source: emoji.source,
         size: emoji.size,
-        fileHash: emoji.fileHash  // 传递 hash 信息
+        fileHash: emoji.fileHash  // Pasar la información del hash
       })
     })
 
-    // 添加背景图片
+    // Añadir imágenes de fondo
     const skin = this.config?.theme?.skin
     if (skin?.light?.backgroundType === 'image' && skin.light.backgroundImage) {
       resources.files.push({
@@ -656,8 +658,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 预处理自定义字体
-   * @param {Function} progressCallback - 进度回调函数  
+   * Preprocesa las fuentes personalizadas.
+   * @param {Function} progressCallback - Función de devolución de llamada de progreso  
    * @returns {Promise<void>}
    */
   async preprocessCustomFonts(progressCallback = null) {
@@ -683,12 +685,12 @@ class AssetsBuilder {
         
         let convertedFont
         
-        // 使用浏览器端字体转换器
+        // Usar el convertidor de fuentes del lado del navegador
         await this.fontConverterBrowser.initialize()
         convertedFont = await this.fontConverterBrowser.convertToCBIN(convertOptions)
         this.convertedFonts.set(fontInfo.filename, convertedFont)
 
-        // 保存转换后的字体到临时存储
+        // Guardar la fuente convertida en el almacenamiento temporal
         if (this.autoSaveEnabled) {
           const tempKey = `converted_font_${fontInfo.filename}`
           try {
@@ -711,9 +713,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 生成 assets.bin
-   * @param {Function} progressCallback - 进度回调函数
-   * @returns {Promise<Blob>} 生成的 assets.bin 文件
+   * Genera assets.bin.
+   * @param {Function} progressCallback - Función de devolución de llamada de progreso
+   * @returns {Promise<Blob>} El archivo assets.bin generado
    */
   async generateAssetsBin(progressCallback = null) {
     if (!this.config) {
@@ -723,7 +725,7 @@ class AssetsBuilder {
     try {
       if (progressCallback) progressCallback(0, 'Starting generation...')
       
-      // 预处理自定义字体
+      // Preprocesar fuentes personalizadas
       await this.preprocessCustomFonts(progressCallback)
       
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -731,11 +733,11 @@ class AssetsBuilder {
       
       const resources = this.preparePackageResources()
       
-      // 清理生成器状态
+      // Limpiar el estado del generador
       this.wakenetPacker.clear()
       this.spiffsGenerator.clear()
       
-      // 处理各类资源文件
+      // Procesar varios tipos de archivos de recursos
       await this.processResourceFiles(resources, progressCallback)
       
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -744,7 +746,7 @@ class AssetsBuilder {
       // Print file list
       this.spiffsGenerator.printFileList()
       
-      // 生成最终的 assets.bin
+      // Generar el archivo assets.bin final
       const assetsBinData = await this.spiffsGenerator.generate((progress, message) => {
         if (progressCallback) {
           progressCallback(90 + progress * 0.1, message)
@@ -762,9 +764,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 下载 assets.bin 文件
-   * @param {Blob} blob - assets.bin 文件数据
-   * @param {string} filename - 下载文件名
+   * Descarga el archivo assets.bin.
+   * @param {Blob} blob - Datos del archivo assets.bin
+   * @param {string} filename - Nombre del archivo a descargar
    */
   downloadAssetsBin(blob, filename = 'assets.bin') {
     const url = URL.createObjectURL(blob)
@@ -778,9 +780,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取字体信息（包含转换功能）
-   * @param {File} fontFile - 字体文件（可选，如果提供则获取该文件的信息）
-   * @returns {Promise<Object>} 字体信息
+   * Obtiene la información de la fuente (incluida la función de conversión).
+   * @param {File} fontFile - Archivo de fuente (opcional, si se proporciona, obtiene la información de ese archivo)
+   * @returns {Promise<Object>} Información de la fuente
    */
   async getFontInfoWithDetails(fontFile = null) {
     try {
@@ -789,7 +791,7 @@ class AssetsBuilder {
       
       let info
       
-      // 使用浏览器端字体转换器
+      // Usar el convertidor de fuentes del lado del navegador
       await this.fontConverterBrowser.initialize()
       info = await this.fontConverterBrowser.getFontInfo(file)
       
@@ -805,9 +807,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 估算字体大小
-   * @param {Object} fontConfig - 字体配置
-   * @returns {Promise<Object>} 大小估算结果
+   * Estima el tamaño de la fuente.
+   * @param {Object} fontConfig - Configuración de la fuente
+   * @returns {Promise<Object>} Resultado de la estimación del tamaño
    */
   async estimateFontSize(fontConfig = null) {
     try {
@@ -824,7 +826,7 @@ class AssetsBuilder {
       
       let sizeInfo
       
-      // 使用浏览器端字体转换器
+      // Usar el convertidor de fuentes del lado del navegador
       sizeInfo = this.fontConverterBrowser.estimateSize(estimateOptions)
       
       return sizeInfo
@@ -835,9 +837,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 验证自定义字体配置
-   * @param {Object} fontConfig - 字体配置
-   * @returns {Object} 验证结果
+   * Valida la configuración de la fuente personalizada.
+   * @param {Object} fontConfig - Configuración de la fuente
+   * @returns {Object} Resultado de la validación
    */
   validateCustomFont(fontConfig) {
     const errors = []
@@ -846,7 +848,7 @@ class AssetsBuilder {
     if (!fontConfig.file) {
       errors.push('Missing font file')
     } else {
-      // 使用浏览器端转换器验证
+      // Validar con el convertidor del lado del navegador
       const isValid = this.fontConverterBrowser.validateFont(fontConfig.file)
         
       if (!isValid) {
@@ -875,8 +877,8 @@ class AssetsBuilder {
 
 
   /**
-   * 获取字体转换器状态
-   * @returns {Object} 转换器状态信息
+   * Obtiene el estado del convertidor de fuentes.
+   * @returns {Object} Información del estado del convertidor
    */
   getConverterStatus() {
     return {
@@ -886,15 +888,15 @@ class AssetsBuilder {
   }
 
   /**
-   * 处理资源文件
-   * @param {Object} resources - 资源配置
-   * @param {Function} progressCallback - 进度回调
+   * Procesa los archivos de recursos.
+   * @param {Object} resources - Configuración de recursos
+   * @param {Function} progressCallback - Devolución de llamada de progreso
    */
   async processResourceFiles(resources, progressCallback = null) {
     let processedCount = 0
     const totalFiles = resources.files.length
     
-    // 添加 index.json 文件
+    // Añadir el archivo index.json
     const indexJsonData = new TextEncoder().encode(JSON.stringify(resources.indexJson, null, 2))
     // print json string
     console.log('index.json', resources.indexJson);
@@ -917,8 +919,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 处理单个资源文件
-   * @param {Object} resource - 资源配置
+   * Procesa un único archivo de recurso.
+   * @param {Object} resource - Configuración del recurso
    */
   async processResourceFile(resource) {
     switch (resource.type) {
@@ -940,8 +942,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 处理唤醒词模型
-   * @param {Object} resource - 资源配置
+   * Procesa el modelo de palabra de activación.
+   * @param {Object} resource - Configuración del recurso
    */
   async processWakewordModel(resource) {
     const success = await this.wakenetPacker.loadModelFromShare(resource.name)
@@ -954,12 +956,12 @@ class AssetsBuilder {
   }
 
   /**
-   * 处理字体文件
-   * @param {Object} resource - 资源配置
+   * Procesa el archivo de fuente.
+   * @param {Object} resource - Configuración del recurso
    */
   async processFontFile(resource) {
     if (resource.config) {
-      // 自定义字体，使用转换后的数据
+      // Fuente personalizada, usar los datos convertidos
       const convertedFont = this.convertedFonts.get(resource.filename)
       if (convertedFont) {
         this.spiffsGenerator.addFile(resource.filename, convertedFont)
@@ -967,46 +969,46 @@ class AssetsBuilder {
         throw new Error(`Converted font not found: ${resource.filename}`)
       }
     } else {
-      // 预设字体，从share/fonts目录加载
+      // Fuente preestablecida, cargar desde el directorio share/fonts
       const fontData = await this.loadPresetFont(resource.source)
       this.spiffsGenerator.addFile(resource.filename, fontData)
     }
   }
 
   /**
-   * 处理表情文件
-   * @param {Object} resource - 资源配置
+   * Procesa el archivo de emoji.
+   * @param {Object} resource - Configuración del recurso
    */
   async processEmojiFile(resource) {
-    // 注意：文件去重已在 preparePackageResources() 阶段完成
-    // 这里处理的每个文件都是唯一的
+    // Nota: La deduplicación de archivos ya se ha completado en la fase preparePackageResources()
+    // Cada archivo procesado aquí es único
     
     let imageData
     let needsScaling = false
-    let imageFormat = 'png' // 默认格式
+    let imageFormat = 'png' // Formato por defecto
     let isGif = false
     
     if (typeof resource.source === 'string' && resource.source.startsWith('preset:')) {
-      // 预设表情包
+      // Paquete de emojis preestablecido
       const presetName = resource.source.replace('preset:', '')
       imageData = await this.loadPresetEmoji(presetName, resource.name)
     } else {
-      // 自定义表情
+      // Emoji personalizado
       const file = resource.source
       
-      // 检测是否为 GIF 格式
+      // Detectar si es un formato GIF
       isGif = this.isGifFile(file)
       
-      // 获取文件格式
+      // Obtener el formato del archivo
       const fileExtension = file.name.split('.').pop().toLowerCase()
       imageFormat = fileExtension
       
-      // 检查图片实际尺寸
+      // Comprobar las dimensiones reales de la imagen
       try {
         const actualDimensions = await this.getImageDimensions(file)
         const targetSize = resource.size || { width: 64, height: 64 }
         
-        // 如果实际尺寸超出目标尺寸范围，需要缩放
+        // Si las dimensiones reales superan el rango de destino, es necesario escalar
         if (actualDimensions.width > targetSize.width || 
             actualDimensions.height > targetSize.height) {
           needsScaling = true
@@ -1016,66 +1018,66 @@ class AssetsBuilder {
         console.warn(`Failed to get emoji image dimensions: ${resource.name}`, error)
       }
       
-      // 如果不需要缩放，直接读取文件
+      // Si no es necesario escalar, leer directamente el archivo
       if (!needsScaling) {
         imageData = await this.fileToArrayBuffer(file)
       }
     }
     
-    // 如果需要缩放，根据文件类型选择缩放方法
+    // Si es necesario escalar, elegir el método de escalado según el tipo de archivo
     if (needsScaling) {
       try {
         const targetSize = resource.size || { width: 64, height: 64 }
         
         if (isGif) {
-          // 使用 WasmGifScaler 处理 GIF 文件
+          // Usar WasmGifScaler para procesar archivos GIF
           console.log(`Using WasmGifScaler to process GIF emoji: ${resource.name}`)
           const scaledGifBlob = await this.gifScaler.scaleGif(resource.source, {
             maxWidth: targetSize.width,
             maxHeight: targetSize.height,
             keepAspectRatio: true,
-            lossy: 30  // 使用 lossy 压缩减小文件大小
+            lossy: 30  // Usar compresión con pérdida para reducir el tamaño del archivo
           })
           imageData = await this.fileToArrayBuffer(scaledGifBlob)
         } else {
-          // 使用常规方法处理其他格式的图片
+          // Usar métodos convencionales para procesar otros formatos de imagen
           imageData = await this.scaleImageToFit(resource.source, targetSize, imageFormat)
         }
       } catch (error) {
         console.error(`Failed to scale emoji image: ${resource.name}`, error)
-        // 缩放失败时使用原图
+        // Usar la imagen original en caso de fallo de escalado
         imageData = await this.fileToArrayBuffer(resource.source)
       }
     }
     
-    // 添加文件到 SPIFFS
+    // Añadir el archivo a SPIFFS
     this.spiffsGenerator.addFile(resource.filename, imageData, {
       width: resource.size?.width || 0,
       height: resource.size?.height || 0
     })
     
-    // 记录处理日志
+    // Registrar el procesamiento
     if (resource.fileHash) {
       console.log(`Emoji file added: ${resource.filename} (hash: ${resource.fileHash.substring(0, 8)})`)
     }
   }
 
   /**
-   * 处理背景文件  
-   * @param {Object} resource - 资源配置
+   * Procesa el archivo de fondo  
+   * @param {Object} resource - Configuración del recurso
    */
   async processBackgroundFile(resource) {
     const imageData = await this.fileToArrayBuffer(resource.source)
     
-    // 将图片转换为RGB565格式的原始数据
+    // Convertir la imagen a datos sin procesar en formato RGB565
     const rawData = await this.convertImageToRgb565(imageData)
     this.spiffsGenerator.addFile(resource.filename, rawData)
   }
 
   /**
-   * 加载预设字体
-   * @param {string} fontName - 字体名称
-   * @returns {Promise<ArrayBuffer>} 字体数据
+   * Carga la fuente preestablecida.
+   * @param {string} fontName - Nombre de la fuente
+   * @returns {Promise<ArrayBuffer>} Datos de la fuente
    */
   async loadPresetFont(fontName) {
     try {
@@ -1090,23 +1092,24 @@ class AssetsBuilder {
   }
 
   /**
-   * 加载预设表情
-   * @param {string} presetName - 预设名称 (twemoji32/twemoji64/noto-emoji_64/noto-emoji_128)
-   * @param {string} emojiName - 表情名称
-   * @returns {Promise<ArrayBuffer>} 表情数据
+   * Carga el emoji preestablecido.
+   * @param {string} presetName - Nombre del preajuste (twemoji32/twemoji64)
+   * @param {string} emojiName - Nombre del emoji
+   * @returns {Promise<ArrayBuffer>} Datos del emoji
    */
   async loadPresetEmoji(presetName, emojiName) {
     try {
-      // Determine file format based on preset name
-      const presetConfigs = {
-        'twemoji32': 'png',
-        'twemoji64': 'png',
-        'noto-emoji_64': 'gif',
-        'noto-emoji_128': 'gif'
+      const presetMeta = {
+        twemoji32: 'png',
+        twemoji64: 'png',
+        notoemoji64: 'gif',
+        notoemoji128: 'gif',
+        kotty64: 'gif',
+        kotty128: 'gif',
+        kotty240: 'gif'
       }
-      const format = presetConfigs[presetName] || 'png'
-      
-      const response = await fetch(`./static/emojis/${presetName}/${emojiName}.${format}`)
+      const ext = presetMeta[presetName] || 'png'
+      const response = await fetch(`./static/${presetName}/${emojiName}.${ext}`)
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
@@ -1117,9 +1120,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 将文件转换为ArrayBuffer
-   * @param {File|Blob} file - 文件对象
-   * @returns {Promise<ArrayBuffer>} 文件数据
+   * Convierte un archivo a ArrayBuffer.
+   * @param {File|Blob} file - Objeto de archivo
+   * @returns {Promise<ArrayBuffer>} Datos del archivo
    */
   fileToArrayBuffer(file) {
     return new Promise((resolve, reject) => {
@@ -1131,11 +1134,11 @@ class AssetsBuilder {
   }
 
   /**
-   * 缩放图片以适应指定尺寸（等比例缩放，contain效果）
-   * @param {ArrayBuffer|File} imageData - 图片数据
-   * @param {Object} targetSize - 目标尺寸 {width, height}
-   * @param {string} format - 图片格式（用于透明背景处理）
-   * @returns {Promise<ArrayBuffer>} 缩放后的图片数据
+   * Escala la imagen para que se ajuste a las dimensiones especificadas (escalado proporcional, efecto de contención).
+   * @param {ArrayBuffer|File} imageData - Datos de la imagen
+   * @param {Object} targetSize - Dimensiones de destino {width, height}
+   * @param {string} format - Formato de la imagen (para el manejo de fondos transparentes)
+   * @returns {Promise<ArrayBuffer>} Datos de la imagen escalada
    */
   async scaleImageToFit(imageData, targetSize, format = 'png') {
     return new Promise((resolve, reject) => {
@@ -1148,44 +1151,44 @@ class AssetsBuilder {
           const canvas = document.createElement('canvas')
           const ctx = canvas.getContext('2d')
           
-          // 设置目标画布尺寸
+          // Establecer las dimensiones del lienzo de destino
           canvas.width = targetSize.width
           canvas.height = targetSize.height
           
-          // 计算等比例缩放尺寸（contain效果）
+          // Calcular las dimensiones de escalado proporcional (efecto de contención)
           const imgAspectRatio = img.width / img.height
           const targetAspectRatio = targetSize.width / targetSize.height
           
           let drawWidth, drawHeight, offsetX, offsetY
           
           if (imgAspectRatio > targetAspectRatio) {
-            // 图片较宽，按宽度缩放
+            // Imagen más ancha, escalar por ancho
             drawWidth = targetSize.width
             drawHeight = targetSize.width / imgAspectRatio
             offsetX = 0
             offsetY = (targetSize.height - drawHeight) / 2
           } else {
-            // 图片较高，按高度缩放
+            // Imagen más alta, escalar por altura
             drawHeight = targetSize.height
             drawWidth = targetSize.height * imgAspectRatio
             offsetX = (targetSize.width - drawWidth) / 2
             offsetY = 0
           }
           
-          // 对PNG格式保持透明背景
+          // Mantener el fondo transparente para el formato PNG
           if (format === 'png') {
-            // 清除画布，保持透明
+            // Limpiar el lienzo, mantener la transparencia
             ctx.clearRect(0, 0, canvas.width, canvas.height)
           } else {
-            // 其他格式使用白色背景
+            // Usar fondo blanco para otros formatos
             ctx.fillStyle = '#FFFFFF'
             ctx.fillRect(0, 0, canvas.width, canvas.height)
           }
           
-          // 绘制缩放后的图片
+          // Dibujar la imagen escalada
           ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
           
-          // 转换为ArrayBuffer
+          // Convertir a ArrayBuffer
           canvas.toBlob((blob) => {
             const reader = new FileReader()
             reader.onload = () => resolve(reader.result)
@@ -1210,25 +1213,25 @@ class AssetsBuilder {
   }
 
   /**
-   * 检测文件是否为 GIF 格式
-   * @param {File} file - 文件对象
-   * @returns {boolean} 是否为 GIF 格式
+   * Detecta si un archivo es de formato GIF.
+   * @param {File} file - Objeto de archivo
+   * @returns {boolean} Si es de formato GIF
    */
   isGifFile(file) {
-    // 检查 MIME 类型
+    // Comprobar el tipo MIME
     if (file.type === 'image/gif') {
       return true
     }
     
-    // 检查文件扩展名
+    // Comprobar la extensión del archivo
     const extension = file.name.split('.').pop().toLowerCase()
     return extension === 'gif'
   }
 
   /**
-   * 获取图片尺寸信息
-   * @param {ArrayBuffer|File} imageData - 图片数据
-   * @returns {Promise<Object>} 图片尺寸信息 {width, height}
+   * Obtiene la información de las dimensiones de la imagen.
+   * @param {ArrayBuffer|File} imageData - Datos de la imagen
+   * @returns {Promise<Object>} Información de las dimensiones de la imagen {width, height}
    */
   async getImageDimensions(imageData) {
     return new Promise((resolve, reject) => {
@@ -1254,9 +1257,9 @@ class AssetsBuilder {
   }
 
   /**
-   * 将图片转换为RGB565格式的原始数据
-   * @param {ArrayBuffer} imageData - 图片数据
-   * @returns {Promise<ArrayBuffer>} RGB565原始数据
+   * Convierte la imagen a datos sin procesar en formato RGB565.
+   * @param {ArrayBuffer} imageData - Datos de la imagen
+   * @returns {Promise<ArrayBuffer>} Datos sin procesar en formato RGB565
    */
   async convertImageToRgb565(imageData) {
     return new Promise((resolve, reject) => {
@@ -1272,54 +1275,54 @@ class AssetsBuilder {
           canvas.width = this.config?.chip?.display?.width || 320
           canvas.height = this.config?.chip?.display?.height || 240
           
-          // 使用 cover 模式绘制图片，保持比例并居中显示
+          // Usar el modo de cubierta para dibujar la imagen, manteniendo la proporción y centrándola
           const imgAspectRatio = img.width / img.height
           const canvasAspectRatio = canvas.width / canvas.height
           
           let drawWidth, drawHeight, offsetX, offsetY
           
           if (imgAspectRatio > canvasAspectRatio) {
-            // 图片较宽，按高度缩放 (cover效果)
+            // Imagen más ancha, escalar por altura (efecto de cubierta)
             drawHeight = canvas.height
             drawWidth = canvas.height * imgAspectRatio
             offsetX = (canvas.width - drawWidth) / 2
             offsetY = 0
           } else {
-            // 图片较高，按宽度缩放 (cover效果)
+            // Imagen más alta, escalar por ancho (efecto de cubierta)
             drawWidth = canvas.width
             drawHeight = canvas.width / imgAspectRatio
             offsetX = 0
             offsetY = (canvas.height - drawHeight) / 2
           }
           
-          // 绘制图片到画布，使用cover模式保持比例并居中
+          // Dibujar la imagen en el lienzo, usando el modo de cubierta para mantener la proporción y centrarla
           ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
           
-          // 获取像素数据
+          // Obtener los datos de los píxeles
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
           const pixels = imageData.data
           
-          // 转换为RGB565格式
+          // Convertir al formato RGB565
           const rgb565Data = new ArrayBuffer(canvas.width * canvas.height * 2)
           const rgb565View = new Uint16Array(rgb565Data)
           
           for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i] >> 3      // 5位红色
-            const g = pixels[i + 1] >> 2  // 6位绿色 
-            const b = pixels[i + 2] >> 3  // 5位蓝色
+            const r = pixels[i] >> 3      // 5 bits para el rojo
+            const g = pixels[i + 1] >> 2  // 6 bits para el verde 
+            const b = pixels[i + 2] >> 3  // 5 bits para el azul
             
             rgb565View[i / 4] = (r << 11) | (g << 5) | b
           }
           
-          // LVGL 常量定义
-          const LV_IMAGE_HEADER_MAGIC = 0x19  // LVGL图片header魔数
-          const LV_COLOR_FORMAT_RGB565 = 0x12 // RGB565颜色格式
+          // Definiciones de constantes de LVGL
+          const LV_IMAGE_HEADER_MAGIC = 0x19  // Número mágico de la cabecera de la imagen de LVGL
+          const LV_COLOR_FORMAT_RGB565 = 0x12 // Formato de color RGB565
           
-          // 计算stride（每行字节数）
-          const stride = canvas.width * 2  // RGB565每像素2字节
+          // Calcular el stride (número de bytes por fila)
+          const stride = canvas.width * 2  // RGB565, 2 bytes por píxel
           
-          // 创建符合lv_image_dsc_t结构的header
-          const headerSize = 28  // lv_image_dsc_t结构大小: header(12) + data_size(4) + data(4) + reserved(4) + reserved_2(4) = 28字节
+          // Crear una cabecera que cumpla con la estructura lv_image_dsc_t
+          const headerSize = 28  // Tamaño de la estructura lv_image_dsc_t: cabecera(12) + data_size(4) + datos(4) + reservado(4) + reservado_2(4) = 28 bytes
           const totalSize = headerSize + rgb565Data.byteLength
           const finalData = new ArrayBuffer(totalSize)
           const finalView = new Uint8Array(finalData)
@@ -1327,41 +1330,41 @@ class AssetsBuilder {
           
           let offset = 0
           
-          // lv_image_header_t结构 (16字节)
-          // magic: 8位, cf: 8位, flags: 16位 (共4字节)
+          // Estructura lv_image_header_t (16 bytes)
+          // magic: 8 bits, cf: 8 bits, flags: 16 bits (total 4 bytes)
           const headerWord1 = (0 << 24) | (0 << 16) | (LV_COLOR_FORMAT_RGB565 << 8) | LV_IMAGE_HEADER_MAGIC
           headerView.setUint32(offset, headerWord1, true)
           offset += 4
           
-          // w: 16位, h: 16位 (共4字节)
+          // w: 16 bits, h: 16 bits (total 4 bytes)
           const sizeWord = (canvas.height << 16) | canvas.width
 
           headerView.setUint32(offset, sizeWord, true)  
           offset += 4
           
-          // stride: 16位, reserved_2: 16位 (共4字节)
+          // stride: 16 bits, reserved_2: 16 bits (total 4 bytes)
           const strideWord = (0 << 16) | stride
           headerView.setUint32(offset, strideWord, true)
           offset += 4
           
-          // lv_image_dsc_t其余字段
-          // data_size: 32位 (4字节)
+          // Campos restantes de lv_image_dsc_t
+          // data_size: 32 bits (4 bytes)
           headerView.setUint32(offset, rgb565Data.byteLength, true)
           offset += 4
           
-          // data指针占位 (4字节，在实际使用中会指向数据部分)
-          headerView.setUint32(offset, headerSize, true)  // 相对偏移
+          // Marcador de posición del puntero de datos (4 bytes, en el uso real apuntará a la sección de datos)
+          headerView.setUint32(offset, headerSize, true)  // Desplazamiento relativo
           offset += 4
           
-          // reserved (4字节)
+          // reservado (4 bytes)
           headerView.setUint32(offset, 0, true)
           offset += 4
           
-          // reserved_2 (4字节)  
+          // reservado_2 (4 bytes)  
           headerView.setUint32(offset, 0, true)
           offset += 4
           
-          // 复制RGB565数据到header后面
+          // Copiar los datos RGB565 después de la cabecera
           finalView.set(new Uint8Array(rgb565Data), headerSize)
           
           URL.revokeObjectURL(url)
@@ -1382,7 +1385,7 @@ class AssetsBuilder {
   }
 
   /**
-   * 清理临时资源
+   * Limpia los recursos temporales.
    */
   cleanup() {
     this.resources.clear()
@@ -1390,11 +1393,11 @@ class AssetsBuilder {
     this.convertedFonts.clear()
     this.wakenetPacker.clear()
     this.spiffsGenerator.clear()
-    this.gifScaler.dispose() // 清理 WasmGifScaler 资源
+    this.gifScaler.dispose() // Limpiar los recursos de WasmGifScaler
   }
 
   /**
-   * 清理所有存储数据（重新开始功能）
+   * Limpia todos los datos almacenados (función de empezar de nuevo).
    * @returns {Promise<void>}
    */
   async clearAllStoredData() {
@@ -1409,8 +1412,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取存储状态信息
-   * @returns {Promise<Object>} 存储状态信息
+   * Obtiene la información del estado de almacenamiento.
+   * @returns {Promise<Object>} Información del estado de almacenamiento
    */
   async getStorageStatus() {
     try {
@@ -1433,8 +1436,8 @@ class AssetsBuilder {
   }
 
   /**
-   * 启用/禁用自动保存
-   * @param {boolean} enabled - 是否启用
+   * Habilita/deshabilita el guardado automático.
+   * @param {boolean} enabled - Si está habilitado
    */
   setAutoSave(enabled) {
     this.autoSaveEnabled = enabled
@@ -1442,14 +1445,14 @@ class AssetsBuilder {
   }
 
   /**
-   * 获取资源清单用于显示
-   * @returns {Array} 资源清单
+   * Obtiene el manifiesto de recursos para su visualización.
+   * @returns {Array} Manifiesto de recursos
    */
   getResourceSummary() {
     const summary = []
     const resources = this.preparePackageResources()
     
-    // 统计各类资源
+    // Contar varios tipos de recursos
     const counts = {
       wakeword: 0,
       font: 0, 

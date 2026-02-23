@@ -9,18 +9,19 @@ class WebSocketTransfer {
     this.onError = null
     this.onComplete = null
     this.onDownloadUrlReady = null
-    this.onTransferStarted = null // 新增：transfer_started事件回调
+    this.onTransferStarted = null // Nuevo: devolución de llamada del evento transfer_started
     this.currentSession = null
-    this.totalBytesSent = 0 // 新增：总发送字节数跟踪
-    this.isSendingChunk = false // 新增：标记是否正在发送数据块
+    this.totalBytesSent = 0 // Nuevo: seguimiento del total de bytes enviados
+    this.isSendingChunk = false // Nuevo: marca para indicar si se está enviando un fragmento de datos
   }
 
-  // 连接到transfer服务器
+  // Conectar al servidor de transferencia
   async connect() {
     return new Promise((resolve, reject) => {
       try {
-        // 使用固定的transfer服务器地址
-        const wsUrl = `wss://api.tenclass.net/transfer/?token=${encodeURIComponent(this.token)}`
+        // Usar la dirección fija del servidor de transferencia
+        //const wsUrl = `wss://api.tenclass.net/transfer/?token=${encodeURIComponent(this.token)}`
+        const wsUrl= `wss://api.xiaozhi.me/mcp/?token=${encodeURIComponent(this.token)}`
         this.ws = new WebSocket(wsUrl)
 
         this.ws.onopen = () => {
@@ -44,7 +45,7 @@ class WebSocketTransfer {
           this.isConnected = false
         }
 
-        // 设置连接超时
+        // Establecer tiempo de espera de conexión
         setTimeout(() => {
           if (!this.isConnected) {
             this.ws.close()
@@ -58,7 +59,7 @@ class WebSocketTransfer {
     })
   }
 
-  // 处理WebSocket消息
+  // Manejar mensajes de WebSocket
   handleMessage(event) {
     try {
       if (typeof event.data === 'string') {
@@ -68,25 +69,25 @@ class WebSocketTransfer {
           case 'file_created':
             if (this.currentSession) {
               this.currentSession.url = message.url
-              // 通知下载URL已准备就绪
+              // Notificar que la URL de descarga está lista
               if (this.onDownloadUrlReady) {
                 this.onDownloadUrlReady(message.url)
               }
-              // 等待transfer_started消息后再开始发送数据
+              // Esperar el mensaje transfer_started antes de comenzar a enviar datos
             }
             break
 
           case 'transfer_started':
             if (this.currentSession) {
-              // 标记已收到transfer_started消息
+              // Marcar que se ha recibido el mensaje transfer_started
               this.currentSession.transferStarted = true
 
-              // 通知外部监听器
+              // Notificar a los oyentes externos
               if (this.onTransferStarted) {
                 this.onTransferStarted()
               }
 
-              // 如果传输已准备好，开始发送文件数据
+              // Si la transferencia está lista, comenzar a enviar los datos del archivo
               if (this.currentSession.transferReady) {
                 this.sendFileData()
               }
@@ -94,16 +95,16 @@ class WebSocketTransfer {
             break
 
           case 'ack':
-            // 收到确认，验证并更新bytesSent
+            // Recibido el acuse de recibo, validar y actualizar bytesSent
             if (this.currentSession) {
               const { blob } = this.currentSession
               const totalSize = blob.size
               const serverBytesSent = message.bytesSent
 
-              // 验证服务器报告的bytesSent
+              // Validar los bytesSent informados por el servidor
               if (serverBytesSent < 0) {
                 console.error('Invalid server bytesSent (negative):', serverBytesSent)
-                this.isSendingChunk = false // 重置发送标志
+                this.isSendingChunk = false // Restablecer la marca de envío
                 if (this.onError) {
                   this.onError(new Error('Server returned invalid byte count'))
                 }
@@ -112,28 +113,28 @@ class WebSocketTransfer {
 
               if (serverBytesSent > totalSize) {
                 console.error(`Server bytesSent (${serverBytesSent}) exceeds fileSize (${totalSize})`)
-                this.isSendingChunk = false // 重置发送标志
+                this.isSendingChunk = false // Restablecer la marca de envío
                 if (this.onError) {
                   this.onError(new Error('Server byte count exceeds file size'))
                 }
                 return
               }
 
-              // 标记当前数据块已发送完成
+              // Marcar el fragmento de datos actual como enviado
               this.isSendingChunk = false
 
-              // 使用服务器确认的bytesSent
+              // Usar los bytesSent confirmados por el servidor
               if (serverBytesSent > this.currentSession.bytesSent) {
                 this.currentSession.bytesSent = serverBytesSent
               }
 
-              // 发送下一块数据
+              // Enviar el siguiente fragmento de datos
               this.sendFileData()
             }
             break
 
           case 'transfer_completed':
-            // 验证传输完整性
+            // Validar la integridad de la transferencia
             if (this.currentSession) {
               const expectedSize = this.currentSession.blob.size
               if (this.totalBytesSent !== expectedSize) {
@@ -162,9 +163,9 @@ class WebSocketTransfer {
     }
   }
 
-  // 发送文件数据
+  // Enviar datos del archivo
   async sendFileData() {
-    // 防止并发发送
+    // Evitar envíos concurrentes
     if (this.isSendingChunk) {
       return
     }
@@ -177,7 +178,7 @@ class WebSocketTransfer {
     const totalSize = blob.size
     let bytesSent = this.currentSession.bytesSent
 
-    // 严格检查：确保不会发送超出文件大小的数据
+    // Comprobación estricta: asegurarse de no enviar datos que excedan el tamaño del archivo
     if (bytesSent >= totalSize) {
       if (this.onProgress) {
         this.onProgress(100, 'Transfer completed, waiting for device confirmation...')
@@ -187,7 +188,7 @@ class WebSocketTransfer {
 
     this.isSendingChunk = true
 
-    // 再次验证bytesSent不超过文件大小
+    // Validar de nuevo que bytesSent no exceda el tamaño del archivo
     if (bytesSent > totalSize) {
       console.error(`Critical error: bytesSent (${bytesSent}) exceeds fileSize (${totalSize})`)
       if (this.onError) {
@@ -196,7 +197,7 @@ class WebSocketTransfer {
       return
     }
 
-    // 计算下一块的大小，确保不会超出文件边界
+    // Calcular el tamaño del siguiente fragmento, asegurándose de no exceder los límites del archivo
     const remainingBytes = Math.max(0, totalSize - bytesSent)
     const chunkSize = Math.min(this.chunkSize, remainingBytes)
 
@@ -207,7 +208,7 @@ class WebSocketTransfer {
     const chunk = blob.slice(bytesSent, bytesSent + chunkSize)
 
     try {
-      // 读取文件块
+      // Leer el fragmento del archivo
       const arrayBuffer = await new Promise((resolve, reject) => {
         const reader = new FileReader()
         reader.onload = () => resolve(reader.result)
@@ -219,15 +220,14 @@ class WebSocketTransfer {
         return
       }
 
-      // 发送二进制数据
+      // Enviar datos binarios
       this.ws.send(arrayBuffer)
 
-      // 更新本地bytesSent计数（乐观更新）
+      // Actualizar el recuento de bytesSent local (actualización optimista)
       const newBytesSent = bytesSent + chunkSize
       this.currentSession.bytesSent = newBytesSent
-      this.totalBytesSent += chunkSize // 更新总发送字节数
-
-      // 验证更新后的bytesSent不超过文件大小
+      this.totalBytesSent += chunkSize // Actualizar el total de bytes enviados
+      // Validar que el bytesSent actualizado no exceda el tamaño del archivo
       if (newBytesSent > totalSize) {
         console.error(`Critical error: bytesSent (${newBytesSent}) exceeds fileSize (${totalSize})`)
         if (this.onError) {
@@ -236,7 +236,7 @@ class WebSocketTransfer {
         return
       }
 
-      // 额外验证：总发送字节数也不应该超过文件大小
+      // Validación adicional: el total de bytes enviados tampoco debe exceder el tamaño del archivo
       if (this.totalBytesSent > totalSize) {
         console.error(`Critical error: totalBytesSent (${this.totalBytesSent}) exceeds fileSize (${totalSize})`)
         if (this.onError) {
@@ -245,8 +245,8 @@ class WebSocketTransfer {
         return
       }
 
-      // 更新进度（只更新传输进度部分）
-      const transferProgress = Math.round(newBytesSent / totalSize * 60) + 40 // 40-100范围
+      // Actualizar el progreso (solo la parte de la transferencia)
+      const transferProgress = Math.round(newBytesSent / totalSize * 60) + 40 // Rango 40-100
       const step = `Transferring... ${Math.round(newBytesSent / 1024)}KB / ${Math.round(totalSize / 1024)}KB`
 
       if (this.onProgress) {
@@ -255,14 +255,14 @@ class WebSocketTransfer {
 
     } catch (error) {
       console.error('Error sending file chunk:', error)
-      this.isSendingChunk = false // 重置发送标志
+      this.isSendingChunk = false // Restablecer la marca de envío
       if (this.onError) {
         this.onError(error)
       }
     }
   }
 
-  // 初始化传输会话（只建立连接和获取URL）
+  // Inicializar la sesión de transferencia (solo establece la conexión y obtiene la URL)
   async initializeSession(blob, onProgress, onError, onDownloadUrlReady) {
     return new Promise((resolve, reject) => {
       this.onProgress = onProgress
@@ -277,13 +277,13 @@ class WebSocketTransfer {
       this.isCancelled = false
 
       try {
-        // 连接到WebSocket服务器
+        // Conectar al servidor WebSocket
         if (this.onProgress) {
           this.onProgress(5, 'Connecting to transfer server...')
         }
 
         this.connect().then(() => {
-          // 发送文件创建请求
+          // Enviar solicitud de creación de archivo
           if (this.onProgress) {
             this.onProgress(10, 'Creating file session...')
           }
@@ -296,15 +296,15 @@ class WebSocketTransfer {
 
           this.ws.send(JSON.stringify(createMessage))
 
-          // 保存blob引用，等待file_created消息
+          // Guardar la referencia del blob, esperar el mensaje file_created
           this.currentSession = {
             blob: blob,
             bytesSent: 0,
             fileSize: blob.size,
             transferStarted: false,
-            transferReady: true // 初始化时就设置为true，因为initializeSession后就可以开始传输
+            transferReady: true // Establecer en true en la inicialización, ya que la transferencia puede comenzar después de initializeSession
           }
-          // 重置总发送字节数
+          // Restablecer el total de bytes enviados
           this.totalBytesSent = 0
         }).catch(error => {
           console.error('Transfer initialization failed:', error)
@@ -322,17 +322,17 @@ class WebSocketTransfer {
     })
   }
 
-  // 开始传输文件数据（假设会话已初始化）
+  // Comenzar a transferir los datos del archivo (suponiendo que la sesión ya ha sido inicializada)
   async startTransfer(onProgress, onError, onComplete) {
     return new Promise((resolve, reject) => {
       this.onProgress = onProgress
       this.onError = (error) => {
-        this.isSendingChunk = false // 重置发送标志
+        this.isSendingChunk = false // Restablecer la marca de envío
         if (onError) onError(error)
         reject(error)
       }
       this.onComplete = () => {
-        this.isSendingChunk = false // 重置发送标志
+        this.isSendingChunk = false // Restablecer la marca de envío
         if (onComplete) onComplete()
         resolve()
       }
@@ -344,42 +344,42 @@ class WebSocketTransfer {
         return
       }
 
-      // 设置传输状态，等待transfer_started消息
+      // Establecer el estado de la transferencia, esperar el mensaje transfer_started
       this.currentSession.transferReady = true
 
-      // 如果已经收到了transfer_started消息，开始传输
+      // Si ya se ha recibido el mensaje transfer_started, comenzar la transferencia
       if (this.currentSession.transferStarted) {
         this.sendFileData()
       } else {
       }
-      // 否则等待transfer_started消息
+      // De lo contrario, esperar el mensaje transfer_started
     })
   }
 
-  // 开始传输文件
+  // Iniciar la transferencia de archivos
   async transferFile(blob, onProgress, onError, onComplete, onDownloadUrlReady) {
-    // 如果提供了onDownloadUrlReady回调，使用分阶段传输
+    // Si se proporciona la devolución de llamada onDownloadUrlReady, usar la transferencia por etapas
     if (onDownloadUrlReady) {
       await this.initializeSession(blob, onProgress, onError, onDownloadUrlReady)
-      // 返回，让调用者决定何时开始传输
+      // Devolver, para que el llamador decida cuándo comenzar la transferencia
       return
     }
 
-    // 否则，使用传统的一次性传输
+    // De lo contrario, usar la transferencia tradicional de una sola vez
     this.onProgress = onProgress
     this.onError = onError
     this.onComplete = onComplete
     this.isCancelled = false
 
     try {
-      // 连接到WebSocket服务器
+      // Conectar al servidor WebSocket
       if (this.onProgress) {
         this.onProgress(5, 'Connecting to transfer server...')
       }
 
       await this.connect()
 
-      // 发送文件创建请求
+      // Enviar solicitud de creación de archivo
       if (this.onProgress) {
         this.onProgress(10, 'Creating file session...')
       }
@@ -392,13 +392,13 @@ class WebSocketTransfer {
 
       this.ws.send(JSON.stringify(createMessage))
 
-      // 保存blob引用，等待file_created消息
+      // Guardar la referencia del blob, esperar el mensaje file_created
       this.currentSession = {
         blob: blob,
         bytesSent: 0,
         fileSize: blob.size,
         transferStarted: false,
-        transferReady: true // 传统模式下直接设置为true
+        transferReady: true // Establecer en true directamente en el modo tradicional
       }
 
     } catch (error) {
@@ -409,16 +409,16 @@ class WebSocketTransfer {
     }
   }
 
-  // 取消传输
+  // Cancelar la transferencia
   cancel() {
     this.isCancelled = true
-    this.isSendingChunk = false // 重置发送标志
+    this.isSendingChunk = false // Restablecer la marca de envío
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.close()
     }
   }
 
-  // 清理资源
+  // Limpiar recursos
   destroy() {
     this.cancel()
     this.onProgress = null

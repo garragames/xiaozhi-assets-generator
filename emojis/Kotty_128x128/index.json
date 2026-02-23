@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "chip_model": "esp32s3",
+  "hide_subtitle": false,
+  "display_config": {
+    "width": 240,
+    "height": 240,
+    "monochrome": false,
+    "color": "RGB565"
+  },
+  "srmodels": "srmodels.bin",
+  "text_font": "font_puhui_deepseek_14_1.bin",
+  "skin": {
+    "light": {
+      "text_color": "#000000",
+      "background_color": "#ffffff"
+    },
+    "dark": {
+      "text_color": "#ffffff",
+      "background_color": "#121212"
+    }
+  },
+  "emoji_collection": [
+    {
+      "name": "neutral",
+      "file": "neutral.gif"
+    },
+    {
+      "name": "happy",
+      "file": "happy.gif"
+    },
+    {
+      "name": "laughing",
+      "file": "laughing.gif"
+    },
+    {
+      "name": "funny",
+      "file": "funny.gif"
+    },
+  ]
+}

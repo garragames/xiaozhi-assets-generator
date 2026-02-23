@@ -5,30 +5,30 @@
       <p class="text-gray-600 mb-6">{{ $t('generateSummary.description') }}</p>
     </div>
 
-    <!-- 设备预览区域 -->
+    <!-- Área de vista previa del dispositivo -->
     <div class="flex flex-col lg:flex-row gap-8">
-      <!-- 设备模拟器 -->
+      <!-- Simulador de dispositivo -->
       <div class="flex-1">
         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $t('generateSummary.devicePreview') }}</h3>
         <div class="bg-gray-100 p-4 rounded-lg">
           <div class="max-w-full overflow-auto flex justify-center">
-            <!-- 设备外框 -->
+            <!-- Marco del dispositivo -->
             <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl inline-block">
               <div class="bg-gray-900 p-2 rounded-xl">
-                <!-- 屏幕区域 -->
+                <!-- Área de la pantalla -->
                 <div 
                   :style="getScreenStyle()"
                   class="relative rounded-lg overflow-hidden border-2 border-gray-700 flex flex-col items-center justify-center"
                 >
-                <!-- 背景层 -->
+                <!-- Capa de fondo -->
                 <div 
                   :style="getBackgroundStyle()"
                   class="absolute inset-0"
                 ></div>
                 
-                <!-- 内容层 -->
+                <!-- Capa de contenido -->
                 <div class="relative z-10 flex flex-col items-center justify-center p-4 text-center">
-                  <!-- 表情显示 -->
+                  <!-- Visualización de emoji -->
                   <div class="mb-4">
                     <div v-if="currentEmoji && availableEmotions.length > 0" class="emoji-container">
                       <img 
@@ -59,7 +59,7 @@
                     </div>
                   </div>
                   
-                  <!-- 文字显示 -->
+                  <!-- Visualización de texto -->
                   <div 
                     v-if="!config.theme.font.hide_subtitle"
                     :style="getTextStyle()"
@@ -76,7 +76,7 @@
               </div>
             </div>
             
-            <!-- 设备信息 -->
+            <!-- Información del dispositivo -->
             <div class="mt-3 text-center text-xs text-gray-400">
               {{ config.chip.display.width }} × {{ config.chip.display.height }}
               {{ config.chip.model.toUpperCase() }}
@@ -86,12 +86,12 @@
         </div>
       </div>
 
-      <!-- 控制面板 -->
+      <!-- Panel de control -->
       <div class="w-full lg:w-80">
         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $t('generateSummary.previewSettings') }}</h3>
         <div class="space-y-6 bg-white border border-gray-200 rounded-lg p-4">
           
-          <!-- 文字内容编辑 -->
+          <!-- Edición de contenido de texto -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('generateSummary.previewText') }}</label>
             <textarea
@@ -102,7 +102,7 @@
             ></textarea>
           </div>
 
-          <!-- 表情切换 -->
+          <!-- Cambio de emoji -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('generateSummary.currentEmotion') }}</label>
             <div v-if="availableEmotions.length > 0" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto justify-center">
@@ -136,7 +136,7 @@
             </div>
           </div>
 
-          <!-- 主题模式切换 -->
+          <!-- Cambio de modo de tema -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('generateSummary.themeMode') }}</label>
             <div class="flex space-x-2">
@@ -166,7 +166,7 @@
           </div>
 
 
-          <!-- 配置摘要 -->
+          <!-- Resumen de configuración -->
           <div class="border-t pt-4">
             <h4 class="font-medium text-gray-900 mb-2">{{ $t('generateSummary.configSummary') }}</h4>
             <div class="text-xs text-gray-600 space-y-1">
@@ -184,7 +184,7 @@
       </div>
     </div>
 
-    <!-- 操作按钮 -->
+    <!-- Botones de acción -->
     <div class="flex justify-between">
       <button 
         @click="$emit('prev')"
@@ -220,14 +220,32 @@ const props = defineProps({
 
 defineEmits(['prev', 'generate'])
 
-// 预览状态
+// Estado de la vista previa
 const previewText = ref(t('generateSummary.defaultPreviewText'))
 const currentEmoji = ref('happy')
 const themeMode = ref('light')
 const fontLoaded = ref(false)
 const loadedFontFamily = ref('')
 
-// 表情数据
+const defaultPresetEmotions = [
+  'neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying',
+  'loving', 'embarrassed', 'surprised', 'shocked', 'thinking', 'winking',
+  'cool', 'relaxed', 'delicious', 'kissy', 'confident', 'sleepy', 'silly', 'confused'
+]
+
+const presetEmotionMap = {
+  twemoji32: defaultPresetEmotions,
+  twemoji64: defaultPresetEmotions,
+  notoemoji64: defaultPresetEmotions,
+  notoemoji128: defaultPresetEmotions,
+  kotty64: ['silly', 'sleepy', 'surprised', 'thinking', 'winking'],
+  kotty128: ['neutral', 'happy', 'laughing', 'funny'],
+  kotty240: ['neutral', 'happy', 'funny']
+}
+
+const getPresetEmotions = (preset) => presetEmotionMap[preset] || defaultPresetEmotions
+
+// Datos de emojis
 const emotionList = computed(() => [
   { key: 'neutral', name: t('generateSummary.emotions.neutral'), emoji: '😶' },
   { key: 'happy', name: t('generateSummary.emotions.happy'), emoji: '🙂' },
@@ -243,43 +261,44 @@ const emotionList = computed(() => [
   { key: 'sleepy', name: t('generateSummary.emotions.sleepy'), emoji: '😴' }
 ])
 
-// 可用的表情列表
+// Lista de emojis disponibles
 const availableEmotions = computed(() => {
   if (props.config.theme.emoji.type === 'preset' && props.config.theme.emoji.preset) {
-    return emotionList.value
+    const allowed = new Set(getPresetEmotions(props.config.theme.emoji.preset))
+    return emotionList.value.filter(e => allowed.has(e.key))
   } else if (props.config.theme.emoji.type === 'custom') {
-    // 只显示用户上传的表情
+    // Solo mostrar los emojis subidos por el usuario
     const customImages = props.config.theme.emoji.custom.images
     return emotionList.value.filter(emotion => customImages[emotion.key])
   } else {
-    // 未配置表情时返回空数组
+    // Devolver un array vacío si no se han configurado emojis
     return []
   }
 })
 
-// 当前表情图片
+// Imagen del emoji actual
 const currentEmojiImage = computed(() => {
   return getEmotionImage(currentEmoji.value)
 })
 
-// 获取屏幕样式
+// Obtener el estilo de la pantalla
 const getScreenStyle = () => {
   const { width, height } = props.config.chip.display
   
-  // 使用1:1像素比例，直接使用配置中的尺寸
+  // Usar una relación de píxeles de 1:1, usar directamente el tamaño de la configuración
   return {
     width: `${width}px`,
     height: `${height}px`
   }
 }
 
-// 获取背景样式
+// Obtener el estilo del fondo
 const getBackgroundStyle = () => {
   const bg = props.config.theme.skin[themeMode.value]
   
   if (bg.backgroundType === 'image' && bg.backgroundImage) {
     try {
-      // 验证背景图片文件是否有效
+      // Validar si el archivo de imagen de fondo es válido
       if (bg.backgroundImage && typeof bg.backgroundImage === 'object' && bg.backgroundImage.size) {
         return {
           backgroundImage: `url(${URL.createObjectURL(bg.backgroundImage)})`,
@@ -288,7 +307,7 @@ const getBackgroundStyle = () => {
         }
       }
     } catch (error) {
-      console.warn('背景图片预览加载失败:', error)
+      console.warn('Error al cargar la vista previa de la imagen de fondo:', error)
     }
   }
   
@@ -297,36 +316,34 @@ const getBackgroundStyle = () => {
   }
 }
 
-// 预设表情包尺寸配置
-const presetEmojiSizes = {
-  'twemoji32': 32,
-  'twemoji64': 64,
-  'noto-emoji_64': 64,
-  'noto-emoji_128': 128
-}
-
-// 获取表情样式
+// Obtener el estilo del emoji
 const getEmojiStyle = () => {
-  let size = 48 // 默认大小
+  let size = 48 // Tamaño por defecto
   
   if (props.config.theme.emoji.type === 'preset') {
-    size = presetEmojiSizes[props.config.theme.emoji.preset] || 32
+    if (props.config.theme.emoji.preset === 'twemoji64') size = 64
+    else if (props.config.theme.emoji.preset === 'kotty64') size = 64
+    else if (props.config.theme.emoji.preset === 'kotty128') size = 96
+    else if (props.config.theme.emoji.preset === 'kotty240') size = 140
+    else if (props.config.theme.emoji.preset === 'notoemoji64') size = 64
+    else if (props.config.theme.emoji.preset === 'notoemoji128') size = 96
+    else size = 32
   } else if (props.config.theme.emoji.custom.size) {
     size = Math.min(props.config.theme.emoji.custom.size.width, props.config.theme.emoji.custom.size.height)
   }
   
-  // 使用1:1像素比例，直接使用配置中的表情尺寸
+  // Usar una relación de píxeles de 1:1, usar directamente el tamaño del emoji de la configuración
   return {
     width: `${size}px`,
     height: `${size}px`
   }
 }
 
-// 获取文字样式
+// Obtener el estilo del texto
 const getTextStyle = () => {
   let fontSize = 14
   
-  // 根据字体配置调整字号
+  // Ajustar el tamaño de la fuente según la configuración de la fuente
   if (props.config.theme.font.type === 'preset') {
     const fontConfig = props.config.theme.font.preset
     if (fontConfig.includes('_14_')) fontSize = 14
@@ -337,7 +354,7 @@ const getTextStyle = () => {
     fontSize = props.config.theme.font.custom.size
   }
   
-  // 使用1:1像素比例，直接使用配置中的字体大小
+  // Usar una relación de píxeles de 1:1, usar directamente el tamaño de la fuente de la configuración
   const textColor = themeMode.value === 'dark' 
     ? props.config.theme.skin.dark.textColor 
     : props.config.theme.skin.light.textColor
@@ -350,9 +367,9 @@ const getTextStyle = () => {
   }
 }
 
-// 动态加载字体
+// Cargar la fuente dinámicamente
 const loadFont = async () => {
-  // 清理之前的字体
+  // Limpiar las fuentes anteriores
   const existingStyles = document.querySelectorAll('style[data-font-preview]')
   existingStyles.forEach(style => style.remove())
   
@@ -361,16 +378,16 @@ const loadFont = async () => {
 
   try {
     if (props.config.theme.font.type === 'preset') {
-      // 加载预设字体
+      // Cargar fuente preestablecida
       const presetId = props.config.theme.font.preset
       let fontFamily, fontUrl
       
-      // 根据预设字体 ID 判断是 puhui 还是 noto
+      // Determinar si es puhui o noto según el ID de la fuente preestablecida
       if (presetId && presetId.startsWith('font_noto_qwen_')) {
         fontFamily = 'NotoPreview'
         fontUrl = './static/fonts/noto_qwen.ttf'
       } else {
-        // 默认为 puhui
+        // Por defecto, puhui
         fontFamily = 'PuHuiPreview'
         fontUrl = './static/fonts/puhui_deepseek.ttf'
       }
@@ -386,19 +403,19 @@ const loadFont = async () => {
       `
       document.head.appendChild(style)
       
-      // 等待字体加载完成
+      // Esperar a que la fuente se cargue
       await document.fonts.load(`16px "${fontFamily}"`)
       loadedFontFamily.value = fontFamily
       fontLoaded.value = true
       
     } else if (props.config.theme.font.custom.file) {
-      // 加载自定义字体
+      // Cargar fuente personalizada
       try {
         const fontFile = props.config.theme.font.custom.file
         
-        // 验证文件对象是否有效
+        // Validar si el objeto de archivo de fuente es válido
         if (!fontFile || typeof fontFile !== 'object' || !fontFile.size) {
-          throw new Error('字体文件对象无效')
+          throw new Error('Objeto de archivo de fuente no válido')
         }
         
         const fontFamily = 'CustomFontPreview'
@@ -415,29 +432,29 @@ const loadFont = async () => {
         `
         document.head.appendChild(style)
         
-        // 等待字体加载完成
+        // Esperar a que la fuente se cargue
         await document.fonts.load(`16px "${fontFamily}"`)
         loadedFontFamily.value = fontFamily
         fontLoaded.value = true
       } catch (error) {
-        console.warn('自定义字体预览加载失败:', error)
-        // 使用系统默认字体作为fallback
+        console.warn('Error al cargar la vista previa de la fuente personalizada:', error)
+        // Usar la fuente predeterminada del sistema como alternativa
         loadedFontFamily.value = 'Arial, sans-serif'
         fontLoaded.value = true
       }
     } else {
-      // 使用系统字体
+      // Usar la fuente del sistema
       loadedFontFamily.value = 'system-ui'
       fontLoaded.value = true
     }
   } catch (error) {
-    console.warn('Font loading failed:', error)
+    console.warn('Falló la carga de la fuente:', error)
     loadedFontFamily.value = 'system-ui'
     fontLoaded.value = true
   }
 }
 
-// 获取字体族
+// Obtener la familia de fuentes
 const getFontFamily = () => {
   if (fontLoaded.value && loadedFontFamily.value) {
     return `"${loadedFontFamily.value}", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif`
@@ -445,78 +462,98 @@ const getFontFamily = () => {
   return '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif'
 }
 
-// 预设表情包配置
-const presetEmojiFormats = {
-  'twemoji32': 'png',
-  'twemoji64': 'png',
-  'noto-emoji_64': 'gif',
-  'noto-emoji_128': 'gif'
-}
-
-// 获取表情图片
+// Obtener la imagen del emoji
 const getEmotionImage = (emotionKey) => {
   if (props.config.theme.emoji.type === 'preset') {
-    const presetId = props.config.theme.emoji.preset
-    const format = presetEmojiFormats[presetId] || 'png'
-    return `./static/emojis/${presetId}/${emotionKey}.${format}`
+    if (props.config.theme.emoji.preset === 'notoemoji128' || props.config.theme.emoji.preset === 'notoemoji64' || props.config.theme.emoji.preset === 'kotty128' || props.config.theme.emoji.preset === 'kotty64' || props.config.theme.emoji.preset === 'kotty240') {
+      const dir = props.config.theme.emoji.preset === 'notoemoji128'
+        ? 'notoemoji128'
+        : props.config.theme.emoji.preset === 'notoemoji64'
+          ? 'notoemoji64'
+          : props.config.theme.emoji.preset === 'kotty128'
+            ? 'kotty128'
+            : props.config.theme.emoji.preset === 'kotty64'
+              ? 'kotty64'
+              : 'kotty240'
+      return `./static/${dir}/${emotionKey}.gif`
+    }
+    const size = props.config.theme.emoji.preset === 'twemoji64' ? '64' : '32'
+    return `./static/twemoji${size}/${emotionKey}.png`
   } else if (props.config.theme.emoji.type === 'custom' && props.config.theme.emoji.custom.images[emotionKey]) {
     try {
       const emojiFile = props.config.theme.emoji.custom.images[emotionKey]
-      // 验证表情文件是否有效
+      // Validar si el archivo de emoji es válido
       if (emojiFile && typeof emojiFile === 'object' && emojiFile.size) {
         return URL.createObjectURL(emojiFile)
       }
     } catch (error) {
-      console.warn(`表情图片预览加载失败 (${emotionKey}):`, error)
+      console.warn(`Error al cargar la vista previa de la imagen del emoji (${emotionKey}):`, error)
     }
   }
   return null
 }
 
-// 获取表情字符
+// Obtener el carácter del emoji
 const getEmojiCharacter = (emotionKey) => {
   const emotion = emotionList.value.find(e => e.key === emotionKey)
   return emotion ? emotion.emoji : '😶'
 }
 
-// 获取表情控制按钮尺寸
+// Obtener el tamaño del botón de control de emoji
 const getEmojiControlSize = () => {
   if (props.config.theme.emoji.type === 'preset') {
-    const baseSize = presetEmojiSizes[props.config.theme.emoji.preset] || 32
-    return Math.min(baseSize + 16, 80) // 加上padding，限制最大尺寸
+    const baseSize = props.config.theme.emoji.preset === 'twemoji64'
+      ? 64
+      : props.config.theme.emoji.preset === 'kotty128'
+        ? 96
+        : props.config.theme.emoji.preset === 'kotty64'
+          ? 64
+          : props.config.theme.emoji.preset === 'kotty240'
+            ? 140
+            : props.config.theme.emoji.preset === 'notoemoji64'
+              ? 64
+              : props.config.theme.emoji.preset === 'notoemoji128'
+                ? 96
+                : 32
+    return Math.min(baseSize + 16, 112) // limitar para mantener botones manejables
   } else if (props.config.theme.emoji.custom.size) {
     const baseSize = Math.min(props.config.theme.emoji.custom.size.width, props.config.theme.emoji.custom.size.height)
-    return Math.min(baseSize + 16, 80) // 限制最大尺寸
+    return Math.min(baseSize + 16, 112) // Limitar el tamaño máximo
   }
-  return 48 // 默认尺寸
+  return 48 // Tamaño por defecto
 }
 
-// 获取表情图片显示尺寸
+// Obtener el tamaño de visualización de la imagen del emoji
 const getEmojiDisplaySize = () => {
   if (props.config.theme.emoji.type === 'preset') {
-    const size = presetEmojiSizes[props.config.theme.emoji.preset] || 32
-    return Math.min(size, 64) // 限制控制面板中的显示尺寸
+    if (props.config.theme.emoji.preset === 'twemoji64') return 64
+    if (props.config.theme.emoji.preset === 'kotty64') return 64
+    if (props.config.theme.emoji.preset === 'kotty128') return 96
+    if (props.config.theme.emoji.preset === 'kotty240') return 140
+    if (props.config.theme.emoji.preset === 'notoemoji64') return 64
+    if (props.config.theme.emoji.preset === 'notoemoji128') return 96
+    return 32
   } else if (props.config.theme.emoji.custom.size) {
-    return Math.min(props.config.theme.emoji.custom.size.width, props.config.theme.emoji.custom.size.height, 64)
+    return Math.min(props.config.theme.emoji.custom.size.width, props.config.theme.emoji.custom.size.height, 96)
   }
-  return 32 // 默认尺寸
+  return 32 // Tamaño por defecto
 }
 
-// 切换表情
+// Cambiar de emoji
 const changeEmotion = (emotionKey) => {
   currentEmoji.value = emotionKey
 }
 
 
-// 配置摘要方法
+// Método de resumen de configuración
 const getWakewordName = () => {
   const wakeword = props.config.theme.wakeword
   if (!wakeword || wakeword.type === 'none') return t('wakewordConfig.noWakeword')
   
   if (wakeword.type === 'preset') {
     const names = {
-      'wn9s_hilexin': 'Hi,乐鑫', 'wn9s_hiesp': 'Hi,ESP', 'wn9s_nihaoxiaozhi': '你好小智',
-      'wn9_nihaoxiaozhi_tts': '你好小智', 'wn9_alexa': 'Alexa', 'wn9_jarvis_tts': 'Jarvis'
+      'wn9s_hilexin': 'Hi, Lexin', 'wn9s_hiesp': 'Hi,ESP', 'wn9s_nihaoxiaozhi': 'Hola, Xiaozhi',
+      'wn9_nihaoxiaozhi_tts': 'Hola, Xiaozhi', 'wn9_alexa': 'Alexa', 'wn9_jarvis_tts': 'Jarvis'
     }
     return names[wakeword.preset] || wakeword.preset
   }
@@ -530,7 +567,7 @@ const getWakewordName = () => {
 
 const getFontName = () => {
   if (props.config.theme.font.type === 'preset') {
-    // 使用国际化翻译获取预设字体名称
+    // Usar la traducción i18n para obtener el nombre de la fuente preestablecida
     return t('fontConfig.presetFontNames.' + props.config.theme.font.preset) || props.config.theme.font.preset
   } else {
     const custom = props.config.theme.font.custom
@@ -540,13 +577,13 @@ const getFontName = () => {
 
 const getEmojiName = () => {
   if (props.config.theme.emoji.type === 'preset' && props.config.theme.emoji.preset) {
-    const presetNames = {
-      'twemoji32': 'Twemoji 32×32',
-      'twemoji64': 'Twemoji 64×64',
-      'noto-emoji_64': 'Noto Emoji 64×64',
-      'noto-emoji_128': 'Noto Emoji 128×128'
-    }
-    return presetNames[props.config.theme.emoji.preset] || props.config.theme.emoji.preset
+    if (props.config.theme.emoji.preset === 'twemoji64') return 'Twemoji 64×64'
+    if (props.config.theme.emoji.preset === 'kotty64') return t('emojiConfig.kottyEmojiName', { size: 64 })
+    if (props.config.theme.emoji.preset === 'kotty128') return t('emojiConfig.kottyEmojiName', { size: 128 })
+    if (props.config.theme.emoji.preset === 'kotty240') return t('emojiConfig.kottyEmojiName', { size: 240 })
+    if (props.config.theme.emoji.preset === 'notoemoji64') return t('emojiConfig.notoEmojiName', { size: 64 })
+    if (props.config.theme.emoji.preset === 'notoemoji128') return t('emojiConfig.notoEmojiName', { size: 128 })
+    return 'Twemoji 32×32'
   } else if (props.config.theme.emoji.type === 'custom') {
     const count = Object.keys(props.config.theme.emoji.custom.images).length
     return t('generateSummary.customEmoji', { count })
@@ -563,25 +600,25 @@ const getSkinName = () => {
   return t('generateSummary.skinLight', { type: lightType }) + '/' + t('generateSummary.skinDark', { type: darkType })
 }
 
-// 监听字体配置变化
+// Observar los cambios en la configuración de la fuente
 watch(() => props.config.theme.font, () => {
   loadFont()
 }, { deep: true })
 
-// 组件挂载
+// Montaje del componente
 onMounted(async () => {
-  // 确保有可用的表情
+  // Asegurarse de que haya emojis disponibles
   if (availableEmotions.value.length > 0) {
     currentEmoji.value = availableEmotions.value[0].key
   } else {
     currentEmoji.value = ''
   }
   
-  // 加载字体
+  // Cargar la fuente
   await loadFont()
 })
 
-// 组件卸载时清理字体
+// Limpiar la fuente al desmontar el componente
 onUnmounted(() => {
   const existingStyles = document.querySelectorAll('style[data-font-preview]')
   existingStyles.forEach(style => style.remove())

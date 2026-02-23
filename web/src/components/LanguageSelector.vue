@@ -44,7 +44,7 @@
       </div>
     </div>
 
-    <!-- 点击其他地方关闭下拉菜单 -->
+    <!-- Hacer clic en otro lugar para cerrar el menú desplegable -->
     <div
       v-if="isOpen"
       class="fixed inset-0 z-40"
@@ -75,12 +75,12 @@ const closeDropdown = () => {
 
 const selectLanguage = (langCode) => {
   locale.value = langCode
-  // 保存语言选择到localStorage
+  // Guardar la selección de idioma en localStorage
   localStorage.setItem('user-language', langCode)
   closeDropdown()
 }
 
-// 监听页面点击事件，关闭下拉菜单
+// Escuchar el evento de clic de la página para cerrar el menú desplegable
 const handleClickOutside = (event) => {
   const dropdown = event.target.closest('.relative')
   if (!dropdown) {
@@ -88,17 +88,17 @@ const handleClickOutside = (event) => {
   }
 }
 
-// 组件挂载时添加事件监听器
+// Agregar un detector de eventos cuando el componente está montado
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  // 从localStorage恢复用户选择的语言
+  // Restaurar el idioma seleccionado por el usuario desde localStorage
   const savedLanguage = localStorage.getItem('user-language')
   if (savedLanguage && languageOptions.find(lang => lang.code === savedLanguage)) {
     locale.value = savedLanguage
   }
 })
 
-// 组件卸载时移除事件监听器
+// Eliminar el detector de eventos al desmontar el componente
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })

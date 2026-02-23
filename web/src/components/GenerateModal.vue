@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-      <!-- 模态框头部 -->
+      <!-- Encabezado del modal -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200">
         <h3 class="text-lg font-medium text-gray-900">{{ $t('generateModal.title') }}</h3>
         <button
@@ -13,16 +13,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-        <!-- 烧录中提示 -->
+        <!-- Aviso de flasheo en curso -->
         <div v-else class="text-sm text-orange-600 font-medium">
           {{ $t('generateModal.flashingInProgress') }}
         </div>
       </div>
 
-      <!-- 模态框内容 -->
+      <!-- Contenido del modal -->
       <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 140px)">
         <div v-if="!isGenerating && !isCompleted" class="space-y-6">
-          <!-- 配置确认 -->
+          <!-- Confirmación de configuración -->
           <div>
             <h4 class="font-medium text-gray-900 mb-3">{{ $t('generateModal.confirmConfig') }}</h4>
             <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
@@ -49,7 +49,7 @@
             </div>
           </div>
 
-          <!-- 文件列表 -->
+          <!-- Lista de archivos -->
           <div>
             <h4 class="font-medium text-gray-900 mb-3">{{ $t('generateModal.fileList') }}</h4>
             <div class="space-y-2 max-h-64 overflow-y-auto">
@@ -72,7 +72,7 @@
           </div>
         </div>
 
-        <!-- 生成进度 -->
+        <!-- Progreso de generación -->
         <div v-if="isGenerating" class="space-y-6 text-center">
           <div class="flex items-center justify-center">
             <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-500"></div>
@@ -92,7 +92,7 @@
             </div>
           </div>
 
-          <!-- 进度步骤 -->
+          <!-- Pasos de progreso -->
           <div class="space-y-2 text-left">
             <div
               v-for="step in progressSteps"
@@ -117,7 +117,7 @@
           </div>
         </div>
 
-        <!-- 完成状态 -->
+        <!-- Estado completado -->
         <div v-if="isCompleted && !isFlashing" class="text-center space-y-6">
           <div class="mx-auto flex items-center justify-center">
             <svg class="w-20 h-20 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -161,8 +161,8 @@
           </div>
         </div>
 
-        <!-- 在线烧录进度 -->
-        <!-- 烧录进行中 -->
+        <!-- Progreso de flasheo en línea -->
+        <!-- Flasheo en curso -->
         <div v-if="isFlashing && !flashError" class="space-y-6 text-center">
           <div class="flex items-center justify-center">
             <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
@@ -182,7 +182,7 @@
             </div>
           </div>
 
-          <!-- 取消按钮 -->
+          <!-- Botón de cancelar -->
           <button
             @click="cancelFlash"
             class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
@@ -191,13 +191,13 @@
           </button>
         </div>
 
-        <!-- 烧录失败错误提示 -->
+        <!-- Mensaje de error de flasheo -->
         <div v-if="flashError" class="text-center mt-4">
           <p class="text-sm text-red-600">{{ flashError }}</p>
         </div>
       </div>
 
-      <!-- 模态框底部 -->
+      <!-- Pie del modal -->
       <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
         <button
           v-if="!isGenerating && !isCompleted"
@@ -243,7 +243,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'generate', 'startFlash', 'cancelFlash'])
 
-// 获取设备状态
+// Obtener el estado del dispositivo
 const { deviceInfo } = useDeviceStatus()
 
 const isGenerating = ref(false)
@@ -260,8 +260,26 @@ const flashProgress = ref(0)
 const flashCurrentStep = ref('')
 const flashError = ref('')
 
+const defaultPresetEmotions = [
+  'neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying',
+  'loving', 'embarrassed', 'surprised', 'shocked', 'thinking', 'winking',
+  'cool', 'relaxed', 'delicious', 'kissy', 'confident', 'sleepy', 'silly', 'confused'
+]
 
-// 使用计算属性来获取翻译后的进度步骤名称
+const presetEmotionMap = {
+  twemoji32: defaultPresetEmotions,
+  twemoji64: defaultPresetEmotions,
+  notoemoji64: defaultPresetEmotions,
+  notoemoji128: defaultPresetEmotions,
+  kotty64: ['silly', 'sleepy', 'surprised', 'thinking', 'winking'],
+  kotty128: ['neutral', 'happy', 'laughing', 'funny'],
+  kotty240: ['neutral', 'happy', 'funny']
+}
+
+const getPresetEmotions = (preset) => presetEmotionMap[preset] || defaultPresetEmotions
+
+
+// Usar propiedades computadas para obtener los nombres de los pasos de progreso traducidos
 const progressSteps = computed(() => [
   { id: 1, name: t('progressSteps.init'), status: 'pending' },
   { id: 2, name: t('progressSteps.font'), status: 'pending' },
@@ -275,7 +293,7 @@ const progressSteps = computed(() => [
 
 const fileList = ref([])
 
-// 图标组件 - 使用render函数并用markRaw包装以避免响应式化
+// Componente de icono - usar la función de renderizado y envolver con markRaw para evitar la reactividad
 const FileIcon = markRaw({
   render: () => h('svg', {
     fill: 'currentColor',
@@ -338,10 +356,10 @@ const getWakewordName = () => {
   
   if (wakeword.type === 'preset') {
     const names = {
-      'wn9s_hilexin': 'Hi,乐鑫',
+      'wn9s_hilexin': 'Hi, Lexin',
       'wn9s_hiesp': 'Hi,ESP',
-      'wn9s_nihaoxiaozhi': '你好小智',
-      'wn9_nihaoxiaozhi_tts': '你好小智',
+      'wn9s_nihaoxiaozhi': 'Hola, Xiaozhi',
+      'wn9_nihaoxiaozhi_tts': 'Hola, Xiaozhi',
       'wn9_alexa': 'Alexa'
     }
     return names[wakeword.preset] || wakeword.preset
@@ -363,13 +381,13 @@ const getFontName = () => {
 
 const getEmojiName = () => {
   if (props.config.theme.emoji.type === 'preset' && props.config.theme.emoji.preset) {
-    const presetNames = {
-      'twemoji32': 'Twemoji 32×32',
-      'twemoji64': 'Twemoji 64×64',
-      'noto-emoji_64': 'Noto Emoji 64×64',
-      'noto-emoji_128': 'Noto Emoji 128×128'
-    }
-    return presetNames[props.config.theme.emoji.preset] || props.config.theme.emoji.preset
+    if (props.config.theme.emoji.preset === 'twemoji32') return 'Twemoji 32×32'
+    if (props.config.theme.emoji.preset === 'twemoji64') return 'Twemoji 64×64'
+    if (props.config.theme.emoji.preset === 'kotty128') return t('emojiConfig.kottyEmojiName', { size: 128 })
+    if (props.config.theme.emoji.preset === 'kotty64') return t('emojiConfig.kottyEmojiName', { size: 64 })
+    if (props.config.theme.emoji.preset === 'kotty240') return t('emojiConfig.kottyEmojiName', { size: 240 })
+    if (props.config.theme.emoji.preset === 'notoemoji64') return t('emojiConfig.notoEmojiName', { size: 64 })
+    if (props.config.theme.emoji.preset === 'notoemoji128') return t('emojiConfig.notoEmojiName', { size: 128 })
   } else if (props.config.theme.emoji.type === 'custom') {
     return t('generateModal.customEmoji')
   } else if (props.config.theme.emoji.type === 'none') {
@@ -381,30 +399,30 @@ const getEmojiName = () => {
 const initializeFileList = () => {
   fileList.value = []
 
-  // 添加索引文件
+  // Agregar archivo de índice
   fileList.value.push({
     id: 'index',
     name: 'index.json',
-    description: '配置索引文件',
+    description: 'Archivo de índice de configuración',
     icon: FileIcon,
     iconColor: 'text-blue-500',
     size: '1KB'
   })
 
-  // 添加唤醒词模型（如果有配置）
+  // Agregar modelo de palabra de activación (si está configurado)
   const wakeword = props.config.theme.wakeword
   if (wakeword && wakeword.type !== 'none') {
     fileList.value.push({
       id: 'srmodels',
       name: 'srmodels.bin',
-      description: wakeword.type === 'custom' ? '自定义命令词模型' : '预设唤醒词模型',
+      description: wakeword.type === 'custom' ? 'Modelo de palabra de comando personalizado' : 'Modelo de palabra de activación preestablecido',
       icon: MicIcon,
       iconColor: 'text-green-500',
       size: wakeword.type === 'custom' ? '~1.2MB' : '~300KB'
     })
   }
 
-  // 添加字体文件
+  // Agregar archivo de fuente
   if (props.config.theme.font.type === 'preset') {
     const fontSizes = {
       'font_puhui_deepseek_14_1': '180KB',
@@ -416,7 +434,7 @@ const initializeFileList = () => {
     fileList.value.push({
       id: 'font',
       name: `${props.config.theme.font.preset}.bin`,
-      description: '预设字体文件',
+      description: 'Archivo de fuente preestablecido',
       icon: FontIcon,
       iconColor: 'text-yellow-500',
       size: fontSizes[props.config.theme.font.preset] || '500KB'
@@ -428,7 +446,7 @@ const initializeFileList = () => {
     fileList.value.push({
       id: 'font',
       name: `font_custom_${custom.size}_${custom.bpp}.bin`,
-      description: '自定义字体文件',
+      description: 'Archivo de fuente personalizado',
       icon: FontIcon,
       iconColor: 'text-yellow-500',
       size: estimatedSize > 1024 ? `${(estimatedSize/1024).toFixed(1)}MB` : `${Math.round(estimatedSize)}KB`,
@@ -436,16 +454,35 @@ const initializeFileList = () => {
     })
   }
 
-  // 添加表情文件
+  // Agregar archivos de emoji
   if (props.config.theme.emoji.type === 'preset' && props.config.theme.emoji.preset) {
-    const emotionList = ['neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying', 'loving', 'embarrassed', 'surprised', 'shocked', 'thinking', 'winking', 'cool', 'relaxed', 'delicious', 'kissy', 'confident', 'sleepy', 'silly', 'confused']
-    const size = props.config.theme.emoji.preset === 'twemoji64' ? '3KB' : '1KB'
+    const emotionList = getPresetEmotions(props.config.theme.emoji.preset)
+    const presetSize = {
+      twemoji32: '1KB',
+      twemoji64: '3KB',
+      kotty128: '90KB',
+      kotty64: '40KB',
+      kotty240: '180KB',
+      notoemoji64: '80KB',
+      notoemoji128: '220KB'
+    }
+    const presetExt = {
+      twemoji32: 'png',
+      twemoji64: 'png',
+      kotty128: 'gif',
+      kotty64: 'gif',
+      kotty240: 'gif',
+      notoemoji64: 'gif',
+      notoemoji128: 'gif'
+    }
+    const size = presetSize[props.config.theme.emoji.preset] || '1KB'
+    const ext = presetExt[props.config.theme.emoji.preset] || 'png'
     
     emotionList.forEach(emotion => {
       fileList.value.push({
         id: `emoji_${emotion}`,
-        name: `${emotion}.png`,
-        description: `${emotion}表情图片`,
+        name: `${emotion}.${ext}`,
+        description: `Imagen de emoji ${emotion}`,
         icon: ImageIcon,
         iconColor: 'text-pink-500',
         size: size
@@ -457,13 +494,13 @@ const initializeFileList = () => {
     const fileMap = custom.fileMap || {}
     const images = custom.images || {}
     
-    // 必须使用新的 hash 映射结构
+    // Debe usar la nueva estructura de mapeo de hash
     if (Object.keys(emotionMap).length === 0 || Object.keys(fileMap).length === 0) {
       console.error(t('errors.incompatibleEmojiData'))
       return
     }
     
-    // 统计唯一文件
+    // Contar archivos únicos
     const uniqueFiles = new Map()
     const emotionsPerFile = new Map()
     
@@ -483,7 +520,7 @@ const initializeFileList = () => {
       }
     })
     
-    // 添加去重后的文件到列表
+    // Agregar archivos deduplicados a la lista
     uniqueFiles.forEach((fileInfo, fileHash) => {
       const emotionNames = fileInfo.emotions.join(', ')
       const isShared = fileInfo.emotions.length > 1
@@ -492,8 +529,8 @@ const initializeFileList = () => {
         id: `emoji_${fileHash.substring(0, 8)}`,
         name: `emoji_${fileHash.substring(0, 8)}.${fileInfo.file.name.split('.').pop()}`,
         description: isShared 
-          ? `共享表情图片 (${emotionNames})` 
-          : `${emotionNames}表情图片`,
+          ? `Imagen de emoji compartida (${emotionNames})` 
+          : `Imagen de emoji ${emotionNames}`,
         icon: ImageIcon,
         iconColor: isShared ? 'text-purple-500' : 'text-pink-500',
         size: fileInfo.size,
@@ -501,13 +538,13 @@ const initializeFileList = () => {
       })
     })
     
-    // 添加去重统计信息
+    // Agregar estadísticas de deduplicación
     if (uniqueFiles.size < Object.keys(emotionMap).length) {
-      console.log(`表情去重：${Object.keys(emotionMap).length} 个表情使用了 ${uniqueFiles.size} 个文件`)
+      console.log(`Deduplicación de emojis: ${Object.keys(emotionMap).length} emojis usaron ${uniqueFiles.size} archivos`)
     }
   }
 
-  // 添加背景文件
+  // Agregar archivos de fondo
   if (props.config.theme.skin.light.backgroundType === 'image' && props.config.theme.skin.light.backgroundImage) {
     const { width, height } = props.config.chip.display
     const estimatedSize = Math.round(width * height * 2 / 1024) // RGB565
@@ -515,7 +552,7 @@ const initializeFileList = () => {
     fileList.value.push({
       id: 'bg_light',
       name: 'background_light.raw',
-      description: '浅色模式背景图片',
+      description: 'Imagen de fondo del modo claro',
       icon: ImageIcon,
       iconColor: 'text-indigo-500',
       size: estimatedSize > 1024 ? `${(estimatedSize/1024).toFixed(1)}MB` : `${estimatedSize}KB`,
@@ -530,7 +567,7 @@ const initializeFileList = () => {
     fileList.value.push({
       id: 'bg_dark',
       name: 'background_dark.raw',
-      description: '深色模式背景图片',
+      description: 'Imagen de fondo del modo oscuro',
       icon: ImageIcon,
       iconColor: 'text-indigo-500',
       size: estimatedSize > 1024 ? `${(estimatedSize/1024).toFixed(1)}MB` : `${estimatedSize}KB`,
@@ -543,7 +580,7 @@ const getTotalSize = () => {
   let totalKB = 0
   
   fileList.value.forEach(file => {
-    const sizeStr = file.size.replace('~', '').replace('预估', '')
+    const sizeStr = file.size.replace('~', '').replace('estimado', '')
     if (sizeStr.includes('MB')) {
       totalKB += parseFloat(sizeStr.replace('MB', '')) * 1024
     } else {
@@ -580,16 +617,16 @@ const startGeneration = async () => {
   generationStartTime.value = Date.now()
   
   try {
-    // 创建AssetsBuilder实例
+    // Crear instancia de AssetsBuilder
     const builder = new AssetsBuilder()
     builder.setConfig(props.config)
     
-    // 生成assets.bin
+    // Generar assets.bin
     const blob = await builder.generateAssetsBin((progressPercent, message) => {
       progress.value = parseInt(progressPercent)
       currentStep.value = message
       
-      // 更新进度步骤状态
+      // Actualizar el estado de los pasos de progreso
       const stepIndex = Math.floor(progressPercent / (100 / progressSteps.value.length))
       progressSteps.value.forEach((step, index) => {
         if (index < stepIndex) {
@@ -602,35 +639,35 @@ const startGeneration = async () => {
       })
     })
     
-    // 完成生成
+    // Generación completa
     isGenerating.value = false
     isCompleted.value = true
     
-    // 更新生成结果
+    // Actualizar resultado de la generación
     generatedFileSize.value = formatFileSize(blob.size)
     const endTime = Date.now()
     const duration = endTime - generationStartTime.value
     generationTime.value = formatDuration(duration)
     
-    // 存储生成的文件用于下载
+    // Almacenar el archivo generado para la descarga
     generatedBlob.value = blob
     
-    // 标记所有步骤为完成
+    // Marcar todos los pasos como completados
     progressSteps.value.forEach(step => {
       step.status = 'completed'
     })
     
-    // 通知父组件
+    // Notificar al componente principal
     emit('generate', fileList.value.map(f => ({ id: f.id, name: f.name })))
     
   } catch (error) {
-    console.error('生成 assets.bin 失败:', error)
+    console.error('Error al generar assets.bin:', error)
     
-    // 重置状态
+    // Restablecer estado
     isGenerating.value = false
     isCompleted.value = false
     
-    // 显示错误
+    // Mostrar error
     alert(t('errors.generationFailed', { error: error.message }))
   }
 }
@@ -651,10 +688,10 @@ const downloadFile = () => {
   }
 }
 
-// 检查设备在线状态
+// Comprobar el estado en línea del dispositivo
 const checkDeviceOnline = async () => {
   try {
-    // 获取URL参数中的token
+    // Obtener el token de los parámetros de la URL
     const urlParams = new URLSearchParams(window.location.search)
     const token = urlParams.get('token')
 
@@ -678,7 +715,7 @@ const checkDeviceOnline = async () => {
   }
 }
 
-// 开始在线烧录
+// Iniciar flasheo en línea
 const startOnlineFlash = async () => {
   if (!generatedBlob.value) {
     alert(t('errors.noFileToDownload'))
@@ -690,7 +727,7 @@ const startOnlineFlash = async () => {
     return
   }
 
-  // 检查文件大小是否超过assets分区大小
+  // Comprobar si el tamaño del archivo excede el tamaño de la partición de assets
   if (deviceInfo.value.assetsPartition && deviceInfo.value.assetsPartition.size) {
     const assetsPartitionSize = deviceInfo.value.assetsPartition.size
     const fileSize = generatedBlob.value.size
@@ -709,7 +746,7 @@ const startOnlineFlash = async () => {
   flashError.value = ''
 
   try {
-    // 通知父组件开始在线烧录
+    // Notificar al componente principal para que inicie el flasheo en línea
     emit('startFlash', {
       blob: generatedBlob.value,
       onProgress: (progress, step) => {
@@ -734,7 +771,7 @@ const startOnlineFlash = async () => {
   }
 }
 
-// 取消烧录
+// Cancelar flasheo
 const cancelFlash = () => {
   if (confirm(t('errors.flashCancelConfirm'))) {
     isFlashing.value = false

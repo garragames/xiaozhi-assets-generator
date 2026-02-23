@@ -289,7 +289,7 @@
       </div>
     </div>
 
-    <!-- 预览区域 -->
+    <!-- Área de vista previa -->
     <div class="space-y-4">
       <h4 class="font-medium text-gray-900">{{ $t('backgroundConfig.backgroundPreview') }}</h4>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -487,7 +487,7 @@ const updateBackgroundImage = async (mode, file) => {
       }
     })
 
-    // 自动保存背景图片到存储
+    // Guardar automáticamente la imagen de fondo en el almacenamiento
     await StorageHelper.saveBackgroundFile(mode, file)
   } else {
     alert(t('backgroundConfig.selectValidImage'))
@@ -503,7 +503,7 @@ const removeImage = async (mode) => {
     }
   })
   
-  // 清空文件输入
+  // Limpiar la entrada de archivo
   if (mode === 'light' && lightImageInput.value) {
     lightImageInput.value.value = ''
   }
@@ -511,7 +511,7 @@ const removeImage = async (mode) => {
     darkImageInput.value.value = ''
   }
 
-  // 删除存储中的背景文件
+  // Eliminar el archivo de fondo del almacenamiento
   await StorageHelper.deleteBackgroundFile(mode)
 }
 
@@ -547,7 +547,7 @@ const getDarkPreviewStyle = () => {
 }
 
 const applyPresetColors = (lightColor, darkColor) => {
-  // 根据背景色智能选择文字色
+  // Elegir inteligentemente el color del texto según el color de fondo
   const lightTextColor = isLightColor(lightColor) ? '#000000' : '#ffffff'
   const darkTextColor = isLightColor(darkColor) ? '#000000' : '#ffffff'
   
@@ -570,7 +570,7 @@ const applyPresetColors = (lightColor, darkColor) => {
   })
 }
 
-// 判断颜色是否为浅色
+// Determinar si un color es claro
 const isLightColor = (color) => {
   const hex = color.replace('#', '')
   const r = parseInt(hex.substr(0, 2), 16)

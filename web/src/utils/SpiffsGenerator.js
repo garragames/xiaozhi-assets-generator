@@ -1,24 +1,24 @@
 /**
- * SpiffsGenerator 类
- * 模仿 spiffs_assets_gen.py 的功能，用于在浏览器端生成 assets.bin 文件
+ * Clase SpiffsGenerator
+ * Imita la funcionalidad de spiffs_assets_gen.py para generar el archivo assets.bin en el navegador.
  * 
- * 文件格式：
+ * Formato de archivo:
  * {
- *     total_files: int (4字节)          // 文件总数
- *     checksum: int (4字节)            // 校验和
- *     combined_data_length: int (4字节) // 数据总长度
- *     mmap_table: [                    // 文件映射表
+ *     total_files: int (4 bytes)          // Número total de archivos
+ *     checksum: int (4 bytes)            // Suma de comprobación
+ *     combined_data_length: int (4 bytes) // Longitud total de los datos
+ *     mmap_table: [                    // Tabla de mapeo de archivos
  *         {
- *             name: char[32]           // 文件名 (32字节)
- *             size: int (4字节)        // 文件大小
- *             offset: int (4字节)      // 文件偏移量 
- *             width: short (2字节)     // 图片宽度
- *             height: short (2字节)    // 图片高度
+ *             name: char[32]           // Nombre del archivo (32 bytes)
+ *             size: int (4 bytes)        // Tamaño del archivo
+ *             offset: int (4 bytes)      // Desplazamiento del archivo 
+ *             width: short (2 bytes)     // Ancho de la imagen
+ *             height: short (2 bytes)    // Altura de la imagen
  *         }
  *         ...
  *     ]
- *     file_data: [                     // 文件数据
- *         0x5A 0x5A + file1_data      // 每个文件前面加0x5A5A标识
+ *     file_data: [                     // Datos del archivo
+ *         0x5A 0x5A + file1_data      // Cada archivo va precedido de la marca 0x5A5A
  *         0x5A 0x5A + file2_data
  *         ...
  *     ]
@@ -32,10 +32,10 @@ class SpiffsGenerator {
   }
 
   /**
-   * 添加文件
-   * @param {string} filename - 文件名
-   * @param {ArrayBuffer} data - 文件数据
-   * @param {Object} options - 可选参数 {width?, height?}
+   * Añade un archivo.
+   * @param {string} filename - Nombre del archivo
+   * @param {ArrayBuffer} data - Datos del archivo
+   * @param {Object} options - Parámetros opcionales {width?, height?}
    */
   addFile(filename, data, options = {}) {
     if (filename.length > 32) {
@@ -52,8 +52,8 @@ class SpiffsGenerator {
   }
 
   /**
-   * 从图片文件获取尺寸信息
-   * @param {ArrayBuffer} imageData - 图片数据
+   * Obtiene la información de las dimensiones de un archivo de imagen.
+   * @param {ArrayBuffer} imageData - Datos de la imagen
    * @returns {Promise<Object>} {width, height}
    */
   async getImageDimensions(imageData) {
@@ -81,9 +81,9 @@ class SpiffsGenerator {
   }
 
   /**
-   * 检查是否为特殊图片格式 (.sjpg, .spng, .sqoi)
-   * @param {string} filename - 文件名
-   * @param {ArrayBuffer} data - 文件数据
+   * Comprueba si se trata de un formato de imagen especial (.sjpg, .spng, .sqoi).
+   * @param {string} filename - Nombre del archivo
+   * @param {ArrayBuffer} data - Datos del archivo
    * @returns {Object} {width, height}
    */
   parseSpecialImageFormat(filename, data) {
@@ -91,10 +91,10 @@ class SpiffsGenerator {
     
     if (['.sjpg', '.spng', '.sqoi'].includes('.' + ext)) {
       try {
-        // 特殊格式的头部结构：偏移14字节后是宽度和高度（各2字节，小端序）
+        // Estructura de la cabecera de formato especial: después de un desplazamiento de 14 bytes están el ancho y el alto (2 bytes cada uno, little-endian)
         const view = new DataView(data)
-        const width = view.getUint16(14, true)  // 小端序
-        const height = view.getUint16(16, true) // 小端序
+        const width = view.getUint16(14, true)  // little-endian
+        const height = view.getUint16(16, true) // little-endian
         return { width, height }
       } catch (error) {
         console.warn(`Failed to parse special image format: ${filename}`, error)
@@ -105,9 +105,9 @@ class SpiffsGenerator {
   }
 
   /**
-   * 将32位整数转换为小端序字节数组
-   * @param {number} value - 整数值
-   * @returns {Uint8Array} 4字节的小端序数组
+   * Convierte un entero de 32 bits a un array de bytes little-endian.
+   * @param {number} value - Valor entero
+   * @returns {Uint8Array} Array de 4 bytes little-endian
    */
   packUint32(value) {
     const bytes = new Uint8Array(4)
@@ -119,9 +119,9 @@ class SpiffsGenerator {
   }
 
   /**
-   * 将16位整数转换为小端序字节数组
-   * @param {number} value - 整数值
-   * @returns {Uint8Array} 2字节的小端序数组
+   * Convierte un entero de 16 bits a un array de bytes little-endian.
+   * @param {number} value - Valor entero
+   * @returns {Uint8Array} Array de 2 bytes little-endian
    */
   packUint16(value) {
     const bytes = new Uint8Array(2)
@@ -131,27 +131,27 @@ class SpiffsGenerator {
   }
 
   /**
-   * 将字符串打包为固定长度的二进制数据
-   * @param {string} string - 输入字符串
-   * @param {number} maxLen - 最大长度
-   * @returns {Uint8Array} 打包后的二进制数据
+   * Empaqueta una cadena en datos binarios de longitud fija.
+   * @param {string} string - Cadena de entrada
+   * @param {number} maxLen - Longitud máxima
+   * @returns {Uint8Array} Datos binarios empaquetados
    */
   packString(string, maxLen) {
     const bytes = new Uint8Array(maxLen)
     const encoded = this.textEncoder.encode(string)
     
-    // 复制字符串数据，确保不超过最大长度
+    // Copiar los datos de la cadena, asegurándose de no exceder la longitud máxima
     const copyLen = Math.min(encoded.length, maxLen)
     bytes.set(encoded.slice(0, copyLen), 0)
     
-    // 剩余字节为0填充
+    // Rellenar los bytes restantes con 0
     return bytes
   }
 
   /**
-   * 计算校验和
-   * @param {Uint8Array} data - 数据
-   * @returns {number} 16位校验和
+   * Calcula la suma de comprobación.
+   * @param {Uint8Array} data - Datos
+   * @returns {number} Suma de comprobación de 16 bits
    */
   computeChecksum(data) {
     let checksum = 0
@@ -162,9 +162,9 @@ class SpiffsGenerator {
   }
 
   /**
-   * 对文件进行排序
-   * @param {Array} files - 文件列表
-   * @returns {Array} 排序后的文件列表
+   * Ordena los archivos.
+   * @param {Array} files - Lista de archivos
+   * @returns {Array} Lista de archivos ordenada
    */
   sortFiles(files) {
     return files.slice().sort((a, b) => {
@@ -182,9 +182,9 @@ class SpiffsGenerator {
   }
 
   /**
-   * 生成 assets.bin 文件
-   * @param {Function} progressCallback - 进度回调函数
-   * @returns {Promise<ArrayBuffer>} 生成的 assets.bin 数据
+   * Genera el archivo assets.bin.
+   * @param {Function} progressCallback - Función de devolución de llamada de progreso
+   * @returns {Promise<ArrayBuffer>} Datos generados de assets.bin
    */
   async generate(progressCallback = null) {
     if (this.files.length === 0) {
@@ -193,11 +193,11 @@ class SpiffsGenerator {
 
     if (progressCallback) progressCallback(0, 'Starting to package files...')
 
-    // 排序文件
+    // Ordenar archivos
     const sortedFiles = this.sortFiles(this.files)
     const totalFiles = sortedFiles.length
 
-    // 处理文件信息并获取图片尺寸
+    // Procesar la información de los archivos y obtener las dimensiones de las imágenes
     const fileInfoList = []
     let mergedDataSize = 0
 
@@ -210,15 +210,15 @@ class SpiffsGenerator {
         progressCallback(10 + (i / totalFiles) * 30, `Processing file: ${file.filename}`)
       }
 
-      // 如果没有提供尺寸信息，尝试自动获取
+      // Si no se proporciona información de tamaño, intentar obtenerla automáticamente
       if (width === 0 && height === 0) {
-        // 先检查特殊图片格式
+        // Primero, comprobar los formatos de imagen especiales
         const specialDimensions = this.parseSpecialImageFormat(file.filename, file.data)
         if (specialDimensions.width > 0 || specialDimensions.height > 0) {
           width = specialDimensions.width
           height = specialDimensions.height
         } else {
-          // 尝试作为普通图片解析
+          // Intentar analizar como una imagen normal
           const ext = file.filename.toLowerCase().split('.').pop()
           if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) {
             const dimensions = await this.getImageDimensions(file.data)
@@ -237,41 +237,41 @@ class SpiffsGenerator {
         height
       })
 
-      mergedDataSize += 2 + file.size // 2字节前缀 + 文件数据
+      mergedDataSize += 2 + file.size // Prefijo de 2 bytes + datos del archivo
     }
 
     if (progressCallback) progressCallback(40, 'Building file mapping table...')
 
-    // 构建映射表
-    const mmapTableSize = totalFiles * (32 + 4 + 4 + 2 + 2) // name + size + offset + width + height
+    // Construir la tabla de mapeo
+    const mmapTableSize = totalFiles * (32 + 4 + 4 + 2 + 2) // nombre + tamaño + desplazamiento + ancho + alto
     const mmapTable = new Uint8Array(mmapTableSize)
     let mmapOffset = 0
 
     for (const fileInfo of fileInfoList) {
-      // 文件名 (32字节)
+      // Nombre del archivo (32 bytes)
       mmapTable.set(this.packString(fileInfo.filename, 32), mmapOffset)
       mmapOffset += 32
 
-      // 文件大小 (4字节)
+      // Tamaño del archivo (4 bytes)
       mmapTable.set(this.packUint32(fileInfo.size), mmapOffset)
       mmapOffset += 4
 
-      // 文件偏移 (4字节)
+      // Desplazamiento del archivo (4 bytes)
       mmapTable.set(this.packUint32(fileInfo.offset), mmapOffset)
       mmapOffset += 4
 
-      // 图片宽度 (2字节)
+      // Ancho de la imagen (2 bytes)
       mmapTable.set(this.packUint16(fileInfo.width), mmapOffset)
       mmapOffset += 2
 
-      // 图片高度 (2字节)  
+      // Altura de la imagen (2 bytes)  
       mmapTable.set(this.packUint16(fileInfo.height), mmapOffset)
       mmapOffset += 2
     }
 
     if (progressCallback) progressCallback(60, 'Merging file data...')
 
-    // 合并文件数据
+    // Combinar los datos de los archivos
     const mergedData = new Uint8Array(mergedDataSize)
     let mergedOffset = 0
 
@@ -282,19 +282,19 @@ class SpiffsGenerator {
         progressCallback(60 + (i / totalFiles) * 20, `Merging file: ${fileInfo.filename}`)
       }
 
-      // 添加0x5A5A前缀
+      // Añadir prefijo 0x5A5A
       mergedData[mergedOffset] = 0x5A
       mergedData[mergedOffset + 1] = 0x5A
       mergedOffset += 2
 
-      // 添加文件数据
+      // Añadir datos del archivo
       mergedData.set(new Uint8Array(fileInfo.data), mergedOffset)
       mergedOffset += fileInfo.size
     }
 
     if (progressCallback) progressCallback(80, 'Computing checksum...')
 
-    // 计算组合数据的校验和
+    // Calcular la suma de comprobación de los datos combinados
     const combinedData = new Uint8Array(mmapTableSize + mergedDataSize)
     combinedData.set(mmapTable, 0)
     combinedData.set(mergedData, mmapTableSize)
@@ -304,26 +304,26 @@ class SpiffsGenerator {
 
     if (progressCallback) progressCallback(90, 'Building final file...')
 
-    // 构建最终输出
+    // Construir la salida final
     const headerSize = 4 + 4 + 4 // total_files + checksum + combined_data_length
     const totalSize = headerSize + combinedDataLength
     const finalData = new Uint8Array(totalSize)
     
     let offset = 0
 
-    // 写入文件总数
+    // Escribir el número total de archivos
     finalData.set(this.packUint32(totalFiles), offset)
     offset += 4
 
-    // 写入校验和
+    // Escribir la suma de comprobación
     finalData.set(this.packUint32(checksum), offset)
     offset += 4
 
-    // 写入组合数据长度
+    // Escribir la longitud de los datos combinados
     finalData.set(this.packUint32(combinedDataLength), offset)
     offset += 4
 
-    // 写入组合数据
+    // Escribir los datos combinados
     finalData.set(combinedData, offset)
 
     if (progressCallback) progressCallback(100, 'Packaging completed')
@@ -332,8 +332,8 @@ class SpiffsGenerator {
   }
 
   /**
-   * 获取文件统计信息
-   * @returns {Object} 统计信息
+   * Obtiene las estadísticas de los archivos.
+   * @returns {Object} Información de estadísticas
    */
   getStats() {
     let totalSize = 0
@@ -355,7 +355,7 @@ class SpiffsGenerator {
   }
 
   /**
-   * 打印打包的文件列表
+   * Imprime la lista de archivos empaquetados.
    */
   printFileList() {
     console.log('=== Packaged File List ===')
@@ -366,7 +366,7 @@ class SpiffsGenerator {
       return
     }
 
-    // 按扩展名和文件名排序后打印
+    // Imprimir después de ordenar por extensión y nombre de archivo
     const sortedFiles = this.sortFiles(this.files)
 
     sortedFiles.forEach((file, index) => {
@@ -381,7 +381,7 @@ class SpiffsGenerator {
       console.log('')
     })
 
-    // 打印统计信息
+    // Imprimir estadísticas
     const stats = this.getStats()
     console.log('=== File Statistics ===')
     console.log(`Total size: ${(stats.totalSize / 1024).toFixed(2)} KB`)
@@ -393,7 +393,7 @@ class SpiffsGenerator {
   }
 
   /**
-   * 清理文件列表
+   * Limpia la lista de archivos.
    */
   clear() {
     this.files = []

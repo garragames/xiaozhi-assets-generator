@@ -134,7 +134,7 @@ export function sum(arr) {
   return arr.reduce((a, v) => a + v, 0)
 }
 
-// 默认导出所有函数
+// Exportar todas las funciones por defecto
 const utils = {
   set_depth,
   unsigned_bits,

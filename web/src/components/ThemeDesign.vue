@@ -161,7 +161,7 @@ const emit = defineEmits(['update:modelValue', 'next', 'prev', 'tabChange'])
 
 const currentTab = ref(props.activeTab)
 
-// 使用计算属性来获取翻译后的tab名称
+// Usar una propiedad computada para obtener el nombre de la pestaña traducido
 const tabs = computed(() => [
   { id: 'wakeword', name: t('themeDesign.tabs.wakeword'), icon: MicrophoneIcon },
   { id: 'font', name: t('themeDesign.tabs.font'), icon: FontIcon },
@@ -175,7 +175,7 @@ const localValue = computed({
 })
 
 const handleNext = () => {
-  // 校验唤醒词配置
+  // Validar la configuración de la palabra de activación
   const wakeword = props.modelValue.wakeword
   if (wakeword.type === 'custom') {
     if (!wakeword.custom.name?.trim()) {
@@ -192,7 +192,7 @@ const handleNext = () => {
     }
   }
 
-  // 校验字体配置
+  // Validar la configuración de la fuente
   const font = props.modelValue.font
   if (font.type === 'custom' && !font.custom?.file) {
     alert(t('fontConfig.selectValidFontFile'))
@@ -207,7 +207,7 @@ const handleTabClick = (tabId) => {
   emit('tabChange', tabId)
 }
 
-// 监听外部activeTab的变化
+// Escuchar los cambios de activeTab externos
 watch(() => props.activeTab, (newTab) => {
   currentTab.value = newTab
 })

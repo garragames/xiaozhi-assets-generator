@@ -1,5 +1,5 @@
 // FreeType interface for browser
-// ES6 版本，适配浏览器环境
+// Versión ES6, adaptada para el entorno del navegador
 
 const ft_render_fabric = () => import('./freetype_build/ft_render.js')
 
@@ -84,7 +84,7 @@ export async function init() {
 export function fontface_create(source, size) {
   let error
   
-  // 正确计算字体数据的长度
+  // Calcular correctamente la longitud de los datos de la fuente
   let fontLength
   if (source instanceof ArrayBuffer) {
     fontLength = source.byteLength
@@ -101,7 +101,7 @@ export function fontface_create(source, size) {
     font: m._malloc(fontLength)
   }
 
-  // 将 ArrayBuffer 或 Uint8Array 转换为内存
+  // Convertir ArrayBuffer o Uint8Array a memoria
   const sourceArray = source instanceof ArrayBuffer ? new Uint8Array(source) : source
   m.writeArrayToMemory(sourceArray, face.font)
 

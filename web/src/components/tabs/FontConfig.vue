@@ -1,11 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $t('fontConfig.title') }}</h3>
-      <p class="text-gray-600">{{ $t('fontConfig.description') }}</p>
-    </div>
-
-    <!-- 字体类型选择 -->
+    <!-- Selección de tipo de fuente -->
     <div class="space-y-4">
       <div class="flex space-x-4">
         <button
@@ -95,7 +90,7 @@
     <div v-if="modelValue.type === 'custom'" class="space-y-6">
       <h4 class="font-medium text-gray-900">{{ $t('fontConfig.customFonts') }}</h4>
       
-      <!-- 文件上传 -->
+      <!-- Carga de archivos -->
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">{{ $t('fontConfig.fontFile') }}</label>
         <div 
@@ -141,7 +136,7 @@
         </div>
       </div>
 
-      <!-- 字体配置选项 -->
+      <!-- Opciones de configuración de fuente -->
       <div v-if="modelValue.custom.file" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('fontConfig.fontSizePx') }}</label>
@@ -184,7 +179,7 @@
 
     </div>
 
-    <!-- 隐藏字幕选项 -->
+    <!-- Ocultar opción de subtítulos -->
     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
       <div class="flex-1">
         <h4 class="font-medium text-gray-900">{{ $t('fontConfig.hideSubtitle') }}</h4>
@@ -277,7 +272,7 @@ const presetFontsBase = [
 
 const presetFonts = computed(() => {
   return presetFontsBase.map(font => {
-    // 根据字体ID判断字符集
+    // Determinar el juego de caracteres según el ID de la fuente
     let charsetText
     if (font.id.startsWith('font_puhui_deepseek_')) {
       charsetText = t('fontConfig.charsetDeepseek')
@@ -349,7 +344,7 @@ const updateCustomFile = async (file) => {
       }
     })
 
-    // 自动保存文件到存储
+    // Guardar automáticamente el archivo en el almacenamiento
     await StorageHelper.saveFontFile(file, localCustom.value)
   } else {
     alert(t('fontConfig.selectValidFontFile'))
@@ -368,12 +363,12 @@ const clearFile = async () => {
     fileInput.value.value = ''
   }
 
-  // 删除存储中的文件
+  // Eliminar el archivo del almacenamiento
   await StorageHelper.deleteFontFile()
 }
 
 
-// 防止循环更新的标志
+// Indicador para evitar actualizaciones en bucle
 const isUpdatingFromProps = ref(false)
 
 watch(() => localCustom.value, (newVal) => {
@@ -398,7 +393,7 @@ watch(() => props.modelValue.custom, (newVal) => {
       bpp: newVal.bpp,
       charset: newVal.charset
     }
-    // 在下一个 tick 重置标志
+    // Restablecer el indicador en el siguiente tick
     nextTick(() => {
       isUpdatingFromProps.value = false
     })

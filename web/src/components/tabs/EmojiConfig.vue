@@ -1,11 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $t('emojiConfig.title') }}</h3>
-      <p class="text-gray-600">{{ $t('emojiConfig.description') }}</p>
-    </div>
-
-    <!-- 表情类型选择 -->
+    <!-- Selección de tipo de emoji -->
     <div class="space-y-4">
       <div class="flex flex-wrap gap-3">
         <button
@@ -81,10 +76,15 @@
             </div>
           </div>
           
-          <!-- 表情预览网格 -->
-          <div class="grid grid-cols-7 gap-1 justify-items-center overflow-hidden">
+          <!-- Cuadrícula de vista previa de emojis -->
+          <div
+            :class="[
+              'grid justify-items-center',
+              pack.size >= 240 ? 'grid-cols-2 gap-4' : pack.size > 64 ? 'grid-cols-4 gap-3' : 'grid-cols-7 gap-1'
+            ]"
+          >
             <div
-              v-for="emotion in pack.preview"
+              v-for="emotion in getPreviewList(pack)"
               :key="emotion"
               :style="{ width: pack.size + 'px', height: pack.size + 'px' }"
               class="bg-gray-100 rounded flex items-center justify-center"
@@ -105,9 +105,9 @@
     <div v-if="modelValue.type === 'custom'" class="space-y-6">
       <h4 class="font-medium text-gray-900">{{ $t('emojiConfig.customEmojiPackConfig') }}</h4>
       
-      <!-- 基本配置 -->
+      <!-- Configuración básica -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- 图片尺寸 -->
+        <!-- Tamaño de la imagen -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('emojiConfig.maxImageWidth') }}</label>
           <input
@@ -131,7 +131,7 @@
         </div>
       </div>
 
-      <!-- 表情图片上传 -->
+      <!-- Carga de imágenes de emoji -->
       <div class="space-y-4">
         <h5 class="font-medium text-gray-900">{{ $t('emojiConfig.uploadEmojiImages') }}</h5>
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
@@ -220,9 +220,9 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 /**
- * 计算文件的 SHA-256 hash
- * @param {File} file - 文件对象
- * @returns {Promise<string>} 文件的 hash 值
+ * Calcula el hash SHA-256 de un archivo
+ * @param {File} file - El objeto de archivo
+ * @returns {Promise<string>} El valor hash del archivo
  */
 const calculateFileHash = async (file) => {
   const buffer = await file.arrayBuffer()
@@ -238,7 +238,6 @@ const presetEmojis = [
     name: t('emojiConfig.twitterEmojiName', { size: 32 }),
     description: t('emojiConfig.twitterEmojiDescription', { size: 32 }),
     size: 32,
-    format: 'png',
     preview: ['neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying']
   },
   {
@@ -246,28 +245,46 @@ const presetEmojis = [
     name: t('emojiConfig.twitterEmojiName', { size: 64 }),
     description: t('emojiConfig.twitterEmojiDescription', { size: 64 }),
     size: 64,
-    format: 'png',
     preview: ['neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying']
   },
   {
-    id: 'noto-emoji_64',
+    id: 'notoemoji64',
     name: t('emojiConfig.notoEmojiName', { size: 64 }),
     description: t('emojiConfig.notoEmojiDescription', { size: 64 }),
     size: 64,
-    format: 'gif',
     preview: ['neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying']
   },
   {
-    id: 'noto-emoji_128',
+    id: 'kotty64',
+    name: t('emojiConfig.kottyEmojiName', { size: 64 }),
+    description: t('emojiConfig.kottyEmojiDescription', { size: 64 }),
+    size: 64,
+    preview: ['silly', 'sleepy', 'surprised', 'thinking', 'winking']
+  },
+  {
+    id: 'kotty240',
+    name: t('emojiConfig.kottyEmojiName', { size: 240 }),
+    description: t('emojiConfig.kottyEmojiDescription', { size: 240 }),
+    size: 240,
+    preview: ['neutral', 'happy', 'funny']
+  },
+  {
+    id: 'kotty128',
+    name: t('emojiConfig.kottyEmojiName', { size: 128 }),
+    description: t('emojiConfig.kottyEmojiDescription', { size: 128 }),
+    size: 128,
+    preview: ['neutral', 'happy', 'laughing', 'funny']
+  },
+  {
+    id: 'notoemoji128',
     name: t('emojiConfig.notoEmojiName', { size: 128 }),
     description: t('emojiConfig.notoEmojiDescription', { size: 128 }),
     size: 128,
-    format: 'gif',
-    preview: ['neutral', 'happy', 'laughing', 'funny', 'sad', 'angry', 'crying']
+    preview: ['neutral', 'happy', 'laughing', 'funny']
   }
 ]
 
-// 使用计算属性来获取翻译后的表情名称
+// Usar una propiedad computada para obtener los nombres de los emojis traducidos
 const emotionList = computed(() => [
   { key: 'neutral', name: t('emojiConfig.emotions.neutral'), emoji: '😶' },
   { key: 'happy', name: t('emojiConfig.emotions.happy'), emoji: '🙂' },
@@ -297,20 +314,20 @@ const localCustom = ref({
 })
 
 const setEmojiType = (type) => {
-  // 避免重复设置相同类型
+  // Evitar la configuración repetida del mismo tipo
   if (props.modelValue.type === type) return
   
   const newValue = { ...props.modelValue, type }
   
   if (type === 'none') {
-    // 选择无表情包
+    // Seleccionar sin paquete de emojis
     newValue.preset = ''
     newValue.custom = {
       ...props.modelValue.custom,
       images: props.modelValue.custom.images || {}
     }
   } else if (type === 'preset') {
-    // 切换到预设表情时，保留自定义表情数据
+    // Al cambiar a emojis preestablecidos, conservar los datos de emojis personalizados
     newValue.preset = props.modelValue.preset || 'twemoji32'
     newValue.custom = {
       ...props.modelValue.custom,
@@ -328,10 +345,10 @@ const setEmojiType = (type) => {
 }
 
 const selectPresetEmoji = (id) => {
-  // 避免重复选择相同预设
+  // Evitar la selección repetida del mismo preajuste
   if (props.modelValue.preset === id) return
   
-  // 选择不同的{{ $t('emojiConfig.presetEmojiPack') }}时，保留自定义表情数据
+  // Al seleccionar diferentes {{ $t('emojiConfig.presetEmojiPack') }}, conservar los datos de emojis personalizados
   emit('update:modelValue', {
     ...props.modelValue,
     preset: id,
@@ -366,16 +383,16 @@ const updateEmojiImage = async (emotionKey, file) => {
     return
   }
 
-  // 计算文件 hash
+  // Calcular el hash del archivo
   const fileHash = await calculateFileHash(file)
   
-  // 获取或初始化 fileMap 和 emotionMap
+  // Obtener o inicializar fileMap y emotionMap
   const currentCustom = props.modelValue.custom || {}
   const fileMap = { ...(currentCustom.fileMap || {}) }
   const emotionMap = { ...(currentCustom.emotionMap || {}) }
   const images = { ...(currentCustom.images || {}) }
   
-  // 检查是否已经存在相同的文件
+  // Comprobar si ya existe el mismo archivo
   let existingEmotions = []
   for (const [emotion, hash] of Object.entries(emotionMap)) {
     if (hash === fileHash && emotion !== emotionKey) {
@@ -383,15 +400,15 @@ const updateEmojiImage = async (emotionKey, file) => {
     }
   }
   
-  // 如果检测到相同文件，提示用户
+  // Si se detecta el mismo archivo, avisar al usuario
   if (existingEmotions.length > 0) {
     console.log(t('emojiConfig.sharedFileMessage', { emotionKey, existingEmotions: existingEmotions.join(', ') }))
   }
   
-  // 更新映射关系
+  // Actualizar las relaciones de mapeo
   fileMap[fileHash] = file
   emotionMap[emotionKey] = fileHash
-  images[emotionKey] = file  // 保持向后兼容
+  images[emotionKey] = file  // Mantener la compatibilidad con versiones anteriores
   
   emit('update:modelValue', {
     ...props.modelValue,
@@ -399,16 +416,16 @@ const updateEmojiImage = async (emotionKey, file) => {
       ...currentCustom,
       size: localCustom.value.size,
       images,
-      fileMap,      // 新增：hash -> File
-      emotionMap    // 新增：emotion -> hash
+      fileMap,      // Nuevo: hash -> Archivo
+      emotionMap    // Nuevo: emoción -> hash
     }
   })
 
-  // 自动保存表情文件到存储（按 hash 保存，避免重复）
+  // Guardar automáticamente el archivo de emoji en el almacenamiento (guardar por hash para evitar duplicados)
   await StorageHelper.saveEmojiFile(`hash_${fileHash}`, file, {
     size: localCustom.value.size,
     format: fileExtension,
-    emotions: [...existingEmotions, emotionKey]  // 记录使用该文件的所有表情
+    emotions: [...existingEmotions, emotionKey]  // Registrar todos los emojis que usan este archivo
   })
 }
 
@@ -418,20 +435,20 @@ const removeImage = async (emotionKey) => {
   const newEmotionMap = { ...(currentCustom.emotionMap || {}) }
   const newFileMap = { ...(currentCustom.fileMap || {}) }
   
-  // 获取要删除的表情对应的 hash
+  // Obtener el hash correspondiente al emoji que se va a eliminar
   const fileHash = newEmotionMap[emotionKey]
   
-  // 删除表情到 hash 的映射
+  // Eliminar el mapeo de la emoción al hash
   delete newImages[emotionKey]
   delete newEmotionMap[emotionKey]
   
-  // 检查是否还有其他表情使用同一个文件
+  // Comprobar si algún otro emoji utiliza el mismo archivo
   const otherEmotionsUsingFile = Object.values(newEmotionMap).filter(h => h === fileHash)
   
-  // 如果没有其他表情使用这个文件，则删除文件本身
+  // Si ningún otro emoji utiliza este archivo, eliminar el archivo en sí
   if (otherEmotionsUsingFile.length === 0 && fileHash) {
     delete newFileMap[fileHash]
-    // 删除存储中的文件
+    // Eliminar el archivo del almacenamiento
     await StorageHelper.deleteEmojiFile(`hash_${fileHash}`)
     console.log(t('emojiConfig.fileDeleted', { fileHash }))
   } else {
@@ -450,9 +467,27 @@ const removeImage = async (emotionKey) => {
 }
 
 const getPresetEmojiUrl = (packId, emotion) => {
-  const pack = presetEmojis.find(p => p.id === packId)
-  const format = pack?.format || 'png'
-  return `./static/emojis/${packId}/${emotion}.${format}`
+  if (packId === 'notoemoji128' || packId === 'notoemoji64' || packId === 'kotty128' || packId === 'kotty64' || packId === 'kotty240') {
+    const dir = packId === 'notoemoji128'
+      ? 'notoemoji128'
+      : packId === 'notoemoji64'
+        ? 'notoemoji64'
+        : packId === 'kotty128'
+          ? 'kotty128'
+          : packId === 'kotty64'
+            ? 'kotty64'
+            : 'kotty240'
+    return `./static/${dir}/${emotion}.gif`
+  }
+  const size = packId === 'twemoji64' ? '64' : '32'
+  return `./static/twemoji${size}/${emotion}.png`
+}
+
+const getPreviewList = (pack) => {
+  if (!pack?.preview) return []
+  if (pack.size >= 240) return pack.preview.slice(0, 2)
+  if (pack.size > 128) return pack.preview.slice(0, 4)
+  return pack.preview
 }
 
 const getImagePreview = (emotionKey) => {
@@ -460,7 +495,7 @@ const getImagePreview = (emotionKey) => {
     return getPresetEmojiUrl(props.modelValue.preset, emotionKey)
   } else {
     const file = props.modelValue.custom.images[emotionKey]
-    // 仅当为 File 或 Blob 时创建预览，避免恢复后占位对象导致报错
+    // Solo crear una vista previa si es un Archivo o Blob, para evitar errores con objetos de marcador de posición después de la restauración
     if (file instanceof File || file instanceof Blob) {
       return URL.createObjectURL(file)
     }
@@ -470,16 +505,16 @@ const getImagePreview = (emotionKey) => {
 
 const handleImageError = (event) => {
   console.warn(t('emojiConfig.imageLoadFailed'), event.target.src)
-  // 可以设置一个默认的fallback图片
+  // Se puede establecer una imagen de respaldo predeterminada
   event.target.style.display = 'none'
 }
 
-// 移除可能导致无限递归的 watch
-// 使用 computed 来同步 localCustom，避免双向绑定冲突
+// Eliminar el observador que podría causar una recursión infinita
+// Usar una propiedad computada para sincronizar localCustom y evitar conflictos de enlace bidireccional
 watch(() => localCustom.value.size, (newSize) => {
   if (props.modelValue.type === 'custom') {
     const currentCustom = props.modelValue.custom
-    // 只在尺寸实际值改变时触发更新
+    // Solo activar la actualización si el valor del tamaño realmente ha cambiado
     if (JSON.stringify(currentCustom.size) !== JSON.stringify(newSize)) {
       emit('update:modelValue', {
         ...props.modelValue,
@@ -492,7 +527,7 @@ watch(() => localCustom.value.size, (newSize) => {
   }
 }, { deep: true })
 
-// 初始化 localCustom
+// Inicializar localCustom
 if (props.modelValue.custom.size) {
   localCustom.value = {
     size: { ...props.modelValue.custom.size }

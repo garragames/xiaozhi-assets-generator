@@ -1,167 +1,167 @@
-# 配置持久化存储功能说明
+# Descripción de la función de almacenamiento persistente de configuración
 
-## 功能概述
+## Resumen de funciones
 
-本项目新增了基于 IndexedDB 的配置和文件持久化存储功能，让用户在刷新页面后仍能保持之前的配置状态和上传的文件。
+Este proyecto agrega una función de almacenamiento persistente de configuración y archivos basada en IndexedDB, que permite a los usuarios mantener su estado de configuración anterior y los archivos cargados después de actualizar la página.
 
-## 主要特性
+## Características principales
 
-### 1. 自动配置保存
-- **实时保存**：用户修改配置时自动保存到 IndexedDB
-- **智能检测**：页面加载时自动检测是否有已保存的配置
-- **状态恢复**：恢复用户的进度位置和主题标签状态
+### 1. Guardado automático de la configuración
+- **Guardado en tiempo real**: Guarda automáticamente la configuración en IndexedDB cuando el usuario la modifica.
+- **Detección inteligente**: Detecta automáticamente si hay una configuración guardada al cargar la página.
+- **Recuperación de estado**: Restaura la posición de progreso del usuario y el estado de la pestaña del tema.
 
-### 2. 文件自动存储
-- **字体文件**：自定义字体文件自动保存，包含转换后的字体数据
-- **表情图片**：自定义表情图片自动保存到存储
-- **背景图片**：浅色/深色模式背景图片自动保存
+### 2. Almacenamiento automático de archivos
+- **Archivos de fuentes**: Guarda automáticamente los archivos de fuentes personalizados, incluidos los datos de las fuentes convertidas.
+- **Imágenes de emojis**: Guarda automáticamente las imágenes de emojis personalizadas en el almacenamiento.
+- **Imágenes de fondo**: Guarda automáticamente las imágenes de fondo de los modos claro/oscuro.
 
-### 3. 重新开始功能
-- **一键清理**：提供重新开始按钮，确认后清空所有存储数据
-- **安全确认**：包含详细的确认对话框，防止误操作
-- **完整重置**：清理配置、文件和临时数据
+### 3. Función de empezar de nuevo
+- **Limpieza con un solo clic**: Proporciona un botón para empezar de nuevo que, tras la confirmación, borra todos los datos almacenados.
+- **Confirmación de seguridad**: Incluye un cuadro de diálogo de confirmación detallado para evitar operaciones accidentales.
+- **Restablecimiento completo**: Limpia la configuración, los archivos y los datos temporales.
 
-## 技术实现
+## Implementación técnica
 
-### 核心组件
+### Componentes principales
 
 #### ConfigStorage.js
-- IndexedDB 数据库管理
-- 配置存储与恢复
-- 文件二进制存储
-- 临时数据管理
+- Gestión de la base de datos IndexedDB
+- Almacenamiento y recuperación de la configuración
+- Almacenamiento binario de archivos
+- Gestión de datos temporales
 
 #### StorageHelper.js
-- 为各组件提供便捷的存储 API
-- 统一的文件保存和删除接口
-- 分类管理不同类型的资源文件
+- Proporciona una API de almacenamiento conveniente para varios componentes.
+- Interfaz unificada para guardar y eliminar archivos.
+- Gestiona por categorías los diferentes tipos de archivos de recursos.
 
-#### AssetsBuilder.js 集成
-- 与存储系统深度集成
-- 自动保存转换后的字体数据
-- 资源文件智能恢复
+#### Integración de AssetsBuilder.js
+- Integración profunda con el sistema de almacenamiento.
+- Guardado automático de los datos de las fuentes convertidas.
+- Recuperación inteligente de archivos de recursos.
 
-### 存储结构
+### Estructura de almacenamiento
 
 ```javascript
-// 数据库：XiaozhiConfigDB
+// Base de datos: XiaozhiConfigDB
 {
-  configs: {      // 配置表
+  configs: {      // Tabla de configuraciones
     key: 'current_config',
-    config: { ... },           // 完整配置对象
-    currentStep: 1,           // 当前步骤
-    activeThemeTab: 'font',   // 活跃标签
-    timestamp: 1234567890     // 保存时间
+    config: { ... },           // Objeto de configuración completo
+    currentStep: 1,           // Paso actual
+    activeThemeTab: 'font',   // Pestaña activa
+    timestamp: 1234567890     // Hora de guardado
   },
   
-  files: {        // 文件表
+  files: {        // Tabla de archivos
     id: 'custom_font',
-    type: 'font',             // 文件类型
-    name: 'MyFont.ttf',       // 文件名
-    size: 1024,               // 文件大小
-    mimeType: 'font/ttf',     // MIME类型
-    data: ArrayBuffer,        // 文件二进制数据
-    metadata: { ... },        // 元数据
-    timestamp: 1234567890     // 保存时间
+    type: 'font',             // Tipo de archivo
+    name: 'MyFont.ttf',       // Nombre del archivo
+    size: 1024,               // Tamaño del archivo
+    mimeType: 'font/ttf',     // Tipo MIME
+    data: ArrayBuffer,        // Datos binarios del archivo
+    metadata: { ... },        // Metadatos
+    timestamp: 1234567890     // Hora de guardado
   },
   
-  temp_data: {    // 临时数据表
+  temp_data: {    // Tabla de datos temporales
     key: 'converted_font_xxx',
-    type: 'converted_font',   // 数据类型
-    data: ArrayBuffer,        // 转换后数据
-    metadata: { ... },        // 元数据
-    timestamp: 1234567890     // 保存时间
+    type: 'converted_font',   // Tipo de datos
+    data: ArrayBuffer,        // Datos convertidos
+    metadata: { ... },        // Metadatos
+    timestamp: 1234567890     // Hora de guardado
   }
 }
 ```
 
-## 用户体验
+## Experiencia de usuario
 
-### 首次使用
-1. 用户正常配置芯片、主题等
-2. 每次修改自动保存到本地存储
-3. 上传的文件同步保存
+### Primer uso
+1. El usuario configura normalmente el chip, el tema, etc.
+2. Cada modificación se guarda automáticamente en el almacenamiento local.
+3. Los archivos cargados se guardan sincrónicamente.
 
-### 刷新页面后
-1. 显示"检测到已保存的配置"提示
-2. 自动恢复到上次的配置状态
-3. 恢复上传的文件和转换数据
-4. 提供"重新开始"选项
+### Después de actualizar la página
+1. Se muestra el mensaje "Se detectó una configuración guardada".
+2. Se restaura automáticamente al último estado de configuración.
+3. Se restauran los archivos cargados y los datos de conversión.
+4. Se proporciona la opción "Empezar de nuevo".
 
-### 重新开始
-1. 点击"重新开始"按钮
-2. 显示详细的确认对话框
-3. 列出将要清除的数据类型
-4. 确认后完整重置到初始状态
+### Empezar de nuevo
+1. Haga clic en el botón "Empezar de nuevo".
+2. Se muestra un cuadro de diálogo de confirmación detallado.
+3. Se enumeran los tipos de datos que se borrarán.
+4. Tras la confirmación, se restablece completamente al estado inicial.
 
-## API 参考
+## Referencia de la API
 
-### ConfigStorage 主要方法
+### Métodos principales de ConfigStorage
 
 ```javascript
-// 保存配置
+// Guardar configuración
 await configStorage.saveConfig(config, currentStep, activeThemeTab)
 
-// 加载配置
+// Cargar configuración
 const data = await configStorage.loadConfig()
 
-// 保存文件
+// Guardar archivo
 await configStorage.saveFile(id, file, type, metadata)
 
-// 加载文件
+// Cargar archivo
 const file = await configStorage.loadFile(id)
 
-// 清空所有数据
+// Borrar todos los datos
 await configStorage.clearAll()
 ```
 
-### StorageHelper 便捷方法
+### Métodos de conveniencia de StorageHelper
 
 ```javascript
-// 保存字体文件
+// Guardar archivo de fuente
 await StorageHelper.saveFontFile(file, config)
 
-// 保存表情文件
+// Guardar archivo de emoji
 await StorageHelper.saveEmojiFile(emojiName, file, config)
 
-// 保存背景文件
+// Guardar archivo de fondo
 await StorageHelper.saveBackgroundFile(mode, file, config)
 
-// 删除文件
+// Eliminar archivo
 await StorageHelper.deleteFontFile()
 await StorageHelper.deleteEmojiFile(emojiName)
 await StorageHelper.deleteBackgroundFile(mode)
 ```
 
-## 注意事项
+## Notas
 
-### 浏览器兼容性
-- 需要支持 IndexedDB 的现代浏览器
-- 建议使用 Chrome 58+, Firefox 55+, Safari 10.1+
+### Compatibilidad con navegadores
+- Requiere un navegador moderno compatible con IndexedDB.
+- Se recomienda usar Chrome 58+, Firefox 55+, Safari 10.1+.
 
-### 存储限制
-- IndexedDB 存储空间受浏览器限制
-- 大文件可能影响存储性能
-- 建议定期清理不需要的数据
+### Límites de almacenamiento
+- El espacio de almacenamiento de IndexedDB está limitado por el navegador.
+- Los archivos grandes pueden afectar el rendimiento del almacenamiento.
+- Se recomienda limpiar periódicamente los datos innecesarios.
 
-### 隐私考虑
-- 数据仅存储在用户本地浏览器
-- 不会上传到服务器
-- 清除浏览器数据会丢失存储的配置
+### Consideraciones de privacidad
+- Los datos solo se almacenan en el navegador local del usuario.
+- No se subirán al servidor.
+- Borrar los datos del navegador provocará la pérdida de la configuración almacenada.
 
-## 故障排除
+## Solución de problemas
 
-### 存储失败
-- 检查浏览器是否支持 IndexedDB
-- 确认浏览器存储空间充足
-- 检查是否启用了私密浏览模式
+### Fallo de almacenamiento
+- Compruebe si el navegador es compatible con IndexedDB.
+- Confirme que el espacio de almacenamiento del navegador es suficiente.
+- Compruebe si el modo de navegación privada está habilitado.
 
-### 配置丢失
-- 清除浏览器数据会导致配置丢失
-- 浏览器升级可能影响存储兼容性
-- 建议重要配置手动备份
+### Pérdida de configuración
+- Borrar los datos del navegador provocará la pérdida de la configuración.
+- Las actualizaciones del navegador pueden afectar la compatibilidad del almacenamiento.
+- Se recomienda hacer una copia de seguridad manual de las configuraciones importantes.
 
-### 性能问题
-- 大量文件存储可能影响性能
-- 定期使用"重新开始"功能清理数据
-- 避免频繁的大文件上传操作
+### Problemas de rendimiento
+- El almacenamiento de una gran cantidad de archivos puede afectar el rendimiento.
+- Utilice periódicamente la función "Empezar de nuevo" para limpiar los datos.
+- Evite las operaciones frecuentes de carga de archivos grandes.

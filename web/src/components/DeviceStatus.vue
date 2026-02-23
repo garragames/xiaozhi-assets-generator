@@ -1,9 +1,9 @@
 <template>
-  <!-- 桌面端布局 -->
+  <!-- Diseño de escritorio -->
   <div v-if="showComponent" class="hidden lg:flex items-center space-x-4" :class="deviceStatus.isOnline ? '' : 'opacity-60'">
-    <!-- 设备状态指示器 -->
+    <!-- Indicador de estado del dispositivo -->
     <div class="flex items-center space-x-2">
-      <!-- 在线状态图标 -->
+      <!-- Icono de estado en línea -->
       <div class="flex items-center space-x-1">
         <div
           :class="[
@@ -19,37 +19,37 @@
         </span>
       </div>
 
-      <!-- 网络状态 -->
+      <!-- Estado de la red -->
       <div v-if="deviceStatus.isOnline && deviceInfo.network" class="flex items-center space-x-1">
-        <!-- Wi-Fi图标 -->
+        <!-- Icono de Wi-Fi -->
         <WifiIcon v-if="deviceInfo.network.type === 'wifi'" color="text-blue-500" />
-        <!-- 4G信号图标 -->
+        <!-- Icono de señal 4G -->
         <Signal4GIcon v-else-if="deviceInfo.network.type === '4g'" />
         <span class="text-xs text-gray-500">{{ getSignalDisplayText(deviceInfo.network.signal, t) }}</span>
       </div>
     </div>
 
-    <!-- 设备详细信息 -->
+    <!-- Información detallada del dispositivo -->
     <div v-if="deviceStatus.isOnline" class="flex items-center space-x-4 text-sm text-gray-600">
-      <!-- 芯片信息 -->
+      <!-- Información del chip -->
       <div v-if="deviceInfo.chip" class="flex items-center space-x-1">
         <ChipIcon />
         <span>{{ deviceInfo.chip.model }}</span>
       </div>
 
-      <!-- Flash大小 -->
+      <!-- Tamaño del flash -->
       <div v-if="deviceInfo.flash" class="flex items-center space-x-1">
         <FlashIcon />
         <span>{{ deviceInfo.flash.size }}</span>
       </div>
 
-      <!-- 开发板信息 -->
+      <!-- Información de la placa -->
       <div v-if="deviceInfo.board" class="flex items-center space-x-1">
         <BoardIcon />
         <span>{{ deviceInfo.board.model }}</span>
       </div>
 
-      <!-- 屏幕分辨率 -->
+      <!-- Resolución de pantalla -->
       <div v-if="deviceInfo.screen" class="flex items-center space-x-1">
         <ScreenIcon />
         <span>{{ deviceInfo.screen.resolution }}</span>
@@ -58,9 +58,9 @@
 
   </div>
 
-  <!-- 移动端布局 -->
+  <!-- Diseño móvil -->
   <div v-if="showComponent" class="lg:hidden flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-    <!-- 头部状态栏 -->
+    <!-- Barra de estado superior -->
     <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
       <div class="flex items-center space-x-2">
         <div
@@ -77,7 +77,7 @@
         </span>
       </div>
 
-      <!-- 网络状态 -->
+      <!-- Estado de la red -->
       <div v-if="deviceStatus.isOnline && deviceInfo.network" class="flex items-center space-x-1">
         <WifiIcon v-if="deviceInfo.network.type === 'wifi'" color="text-blue-500" />
         <Signal4GIcon v-else-if="deviceInfo.network.type === '4g'" />
@@ -85,10 +85,10 @@
       </div>
     </div>
 
-    <!-- 设备信息区域 -->
+    <!-- Área de información del dispositivo -->
     <div v-if="deviceStatus.isOnline" class="px-4 py-3">
       <div class="grid grid-cols-1 gap-2.5">
-        <!-- 第一行：芯片和开发板 -->
+        <!-- Primera fila: chip y placa -->
         <div class="flex justify-between items-center py-1.5 border-b border-gray-100">
           <div v-if="deviceInfo.chip" class="flex items-center space-x-2 flex-1">
             <ChipIcon class="flex-shrink-0" />
@@ -107,7 +107,7 @@
           </div>
         </div>
 
-        <!-- 第二行：Flash和屏幕 -->
+        <!-- Segunda fila: Flash y pantalla -->
         <div class="flex justify-between items-center py-1.5">
           <div v-if="deviceInfo.flash" class="flex items-center space-x-2 flex-1">
             <FlashIcon class="flex-shrink-0" />
@@ -139,7 +139,7 @@ import { WifiIcon, Signal4GIcon, ChipIcon, FlashIcon, BoardIcon, ScreenIcon } fr
 
 const { t } = useI18n()
 
-// 使用共享的设备状态
+// Usar el estado del dispositivo compartido
 const {
   deviceStatus,
   deviceInfo,
@@ -149,15 +149,15 @@ const {
   getSignalDisplayText
 } = useDeviceStatus()
 
-// 根据是否有token决定是否显示组件
+// Decidir si mostrar el componente según si hay un token
 const showComponent = computed(() => hasToken.value)
 
-// 初始化组件
+// Inicializar el componente
 onMounted(() => {
   initializeDeviceStatus()
 })
 
-// 清理资源
+// Limpiar recursos
 onUnmounted(() => {
   cleanupDeviceStatus()
 })

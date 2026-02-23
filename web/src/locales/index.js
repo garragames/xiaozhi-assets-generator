@@ -3,13 +3,15 @@ import zhCN from './zh-CN.json'
 import zhTW from './zh-TW.json'
 import ja from './ja.json'
 import vi from './vi.json'
+import es from './es.json'
 
 export const messages = {
   en,
   'zh-CN': zhCN,
   'zh-TW': zhTW,
   ja,
-  vi
+  vi,
+  es
 }
 
 export const languageOptions = [
@@ -17,7 +19,8 @@ export const languageOptions = [
   { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
   { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼' },
   { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' }
+  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' }
 ]
 
 // 获取浏览器语言
@@ -32,7 +35,8 @@ export function getBrowserLanguage() {
     'vi': 'vi',
     'en': 'en',
     'en-US': 'en',
-    'en-GB': 'en'
+    'en-GB': 'en',
+    'es': 'es'
   }
   return langMap[browserLang] || 'en'
 }

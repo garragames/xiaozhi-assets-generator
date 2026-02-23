@@ -7,7 +7,7 @@
       </p>
     </div>
 
-    <!-- 不支持唤醒词的提示 -->
+    <!-- Mensaje para indicar que la palabra de activación no es compatible -->
     <div v-if="!canUseAnyWakeword" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
       <div class="text-sm text-orange-800">
         <strong>{{ $t('wakewordConfig.notice') }}</strong>
@@ -16,7 +16,7 @@
     </div>
 
     <div v-else class="space-y-6">
-      <!-- 唤醒词类型选择 -->
+      <!-- Selección del tipo de palabra de activación -->
       <div class="flex space-x-4">
         <button
           @click="setWakewordType('none')"
@@ -54,7 +54,7 @@
         </button>
       </div>
 
-      <!-- 预设唤醒词选择 -->
+      <!-- Selección de palabra de activación preestablecida -->
       <div v-if="modelValue.type === 'preset'" class="space-y-4">
         <label class="block text-sm font-medium text-gray-700">{{ $t('wakewordConfig.selectWakeword') }}</label>
         <div class="relative">
@@ -74,7 +74,7 @@
         </div>
       </div>
 
-      <!-- 自定义唤醒词设置 -->
+      <!-- Configuración de palabra de activación personalizada -->
       <div v-if="modelValue.type === 'custom'" class="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
         <h4 class="font-medium text-gray-900">{{ $t('wakewordConfig.customSettings') }}</h4>
         
@@ -149,7 +149,7 @@
         </div>
       </div>
 
-      <!-- 提示信息 -->
+      <!-- Información de consejos -->
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <div class="text-sm text-blue-800">
           <strong>{{ $t('wakewordConfig.tips.tipLabel') }}</strong>
@@ -184,22 +184,22 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-// 完整的唤醒词配置数据
+// Datos completos de configuración de palabras de activación
 const wakewordData = [
-  // WakeNet9s (C3/C5/C6 芯片支持)
-  { id: 'wn9s_hilexin', name: 'Hi,乐鑫', model: 'WakeNet9s' },
+  // WakeNet9s (compatible con chips C3/C5/C6)
+  { id: 'wn9s_hilexin', name: 'Hi, Lexin', model: 'WakeNet9s' },
   { id: 'wn9s_hiesp', name: 'Hi,ESP', model: 'WakeNet9s' },
-  { id: 'wn9s_nihaoxiaozhi', name: '你好小智', model: 'WakeNet9s' },
+  { id: 'wn9s_nihaoxiaozhi', name: 'Hola, Xiaozhi', model: 'WakeNet9s' },
   { id: 'wn9s_hijason', name: 'Hi,Jason', model: 'WakeNet9s' },
   { id: 'wn9s_alexa', name: 'Alexa', model: 'WakeNet9s' },
   
-  // WakeNet9 (S3/P4 芯片支持)
-  { id: 'wn9_hilexin', name: 'Hi,乐鑫', model: 'WakeNet9' },
+  // WakeNet9 (compatible con chips S3/P4)
+  { id: 'wn9_hilexin', name: 'Hi, Lexin', model: 'WakeNet9' },
   { id: 'wn9_hiesp', name: 'Hi,ESP', model: 'WakeNet9' },
-  { id: 'wn9_nihaoxiaozhi_tts', name: '你好小智', model: 'WakeNet9' },
+  { id: 'wn9_nihaoxiaozhi_tts', name: 'Hola, Xiaozhi', model: 'WakeNet9' },
   { id: 'wn9_hijason_tts2', name: 'Hi,Jason', model: 'WakeNet9' },
-  { id: 'wn9_nihaomiaoban_tts2', name: '你好喵伴', model: 'WakeNet9' },
-  { id: 'wn9_xiaoaitongxue', name: '小爱同学', model: 'WakeNet9' },
+  { id: 'wn9_nihaomiaoban_tts2', name: 'Hola, Miau-compañero', model: 'WakeNet9' },
+  { id: 'wn9_xiaoaitongxue', name: 'Compañero Xiaoai', model: 'WakeNet9' },
   { id: 'wn9_himfive', name: 'Hi,M Five', model: 'WakeNet9' },
   { id: 'wn9_alexa', name: 'Alexa', model: 'WakeNet9' },
   { id: 'wn9_jarvis_tts', name: 'Jarvis', model: 'WakeNet9' },
@@ -217,51 +217,48 @@ const wakewordData = [
   { id: 'wn9_bluechip_tts2', name: 'Blue Chip', model: 'WakeNet9' },
   { id: 'wn9_hiandy_tts2', name: 'Hi,Andy', model: 'WakeNet9' },
   { id: 'wn9_heyivy_tts2', name: 'Hey,Ivy', model: 'WakeNet9' },
-  { id: 'wn9_histackchan_tts3', name: 'Hi,Stack Chan', model: 'WakeNet9' },
   { id: 'wn9_hiwalle_tts2', name: 'Hi,Wall E', model: 'WakeNet9' },
-  { id: 'wn9_nihaoxiaoxin_tts', name: '你好小鑫', model: 'WakeNet9' },
-  { id: 'wn9_xiaomeitongxue_tts', name: '小美同学', model: 'WakeNet9' },
-  { id: 'wn9_hixiaoxing_tts', name: 'Hi,小星', model: 'WakeNet9' },
-  { id: 'wn9_xiaolongxiaolong_tts', name: '小龙小龙', model: 'WakeNet9' },
-  { id: 'wn9_miaomiaotongxue_tts', name: '喵喵同学', model: 'WakeNet9' },
-  { id: 'wn9_himiaomiao_tts', name: 'Hi,喵喵', model: 'WakeNet9' },
+  { id: 'wn9_nihaoxiaoxin_tts', name: 'Hola, Xiaoxin', model: 'WakeNet9' },
+  { id: 'wn9_xiaomeitongxue_tts', name: 'Compañero Xiaomei', model: 'WakeNet9' },
+  { id: 'wn9_hixiaoxing_tts', name: 'Hi, Xiaoxing', model: 'WakeNet9' },
+  { id: 'wn9_xiaolongxiaolong_tts', name: 'Xiaolong Xiaolong', model: 'WakeNet9' },
+  { id: 'wn9_miaomiaotongxue_tts', name: 'Compañero Miau Miau', model: 'WakeNet9' },
+  { id: 'wn9_himiaomiao_tts', name: 'Hi, Miau Miau', model: 'WakeNet9' },
   { id: 'wn9_hilili_tts', name: 'Hi,Lily', model: 'WakeNet9' },
   { id: 'wn9_hitelly_tts', name: 'Hi,Telly', model: 'WakeNet9' },
-  { id: 'wn9_xiaobinxiaobin_tts', name: '小滨小滨', model: 'WakeNet9' },
-  { id: 'wn9_haixiaowu_tts', name: 'Hi,小巫', model: 'WakeNet9' },
-  { id: 'wn9_xiaoyaxiaoya_tts2', name: '小鸭小鸭', model: 'WakeNet9' },
-  { id: 'wn9_linaiban_tts2', name: '璃奈板', model: 'WakeNet9' },
-  { id: 'wn9_xiaosurou_tts2', name: '小酥肉', model: 'WakeNet9' },
-  { id: 'wn9_xiaoyutongxue_tts2', name: '小宇同学', model: 'WakeNet9' },
-  { id: 'wn9_xiaomingtongxue_tts2', name: '小明同学', model: 'WakeNet9' },
-  { id: 'wn9_xiaokangtongxue_tts2', name: '小康同学', model: 'WakeNet9' },
-  { id: 'wn9_xiaojianxiaojian_tts2', name: '小箭小箭', model: 'WakeNet9' },
-  { id: 'wn9_xiaotexiaote_tts2', name: '小特小特', model: 'WakeNet9' },
-  { id: 'wn9_nihaoxiaoyi_tts2', name: '你好小益', model: 'WakeNet9' },
-  { id: 'wn9_nihaobaiying_tts2', name: '你好百应', model: 'WakeNet9' },
-  { id: 'wn9_xiaoluxiaolu_tts2', name: '小鹿小鹿', model: 'WakeNet9' },
-  { id: 'wn9_nihaodongdong_tts2', name: '你好东东', model: 'WakeNet9' },
-  { id: 'wn9_nihaoxiaoan_tts2', name: '你好小安', model: 'WakeNet9' },
-  { id: 'wn9_ni3hao3xiao3mai4_tts2', name: '你好小脉', model: 'WakeNet9' },
-  { id: 'wn9_ni3hao3xiao3rui4_tts3', name: '你好小瑞', model: 'WakeNet9' },
-  { id: 'wn9_hai1xiao3ou1_tts3', name: '嗨小欧', model: 'WakeNet9' },
-  { id: 'wn9_xiao3jia1xiao3jia1_tts3', name: '小珈小珈', model: 'WakeNet9' },
-  { id: 'wn9_xiao3feng1xiao3feng1_tts3', name: '小峰小峰', model: 'WakeNet9' }
+  { id: 'wn9_xiaobinxiaobin_tts', name: 'Xiaobin Xiaobin', model: 'WakeNet9' },
+  { id: 'wn9_haixiaowu_tts', name: 'Hi, Xiaowu', model: 'WakeNet9' },
+  { id: 'wn9_xiaoyaxiaoya_tts2', name: 'Xiaoya Xiaoya', model: 'WakeNet9' },
+  { id: 'wn9_linaiban_tts2', name: 'Tablero Rina', model: 'WakeNet9' },
+  { id: 'wn9_xiaosurou_tts2', name: 'Carne de cerdo crujiente', model: 'WakeNet9' },
+  { id: 'wn9_xiaoyutongxue_tts2', name: 'Compañero Xiaoyu', model: 'WakeNet9' },
+  { id: 'wn9_xiaomingtongxue_tts2', name: 'Compañero Xiaoming', model: 'WakeNet9' },
+  { id: 'wn9_xiaokangtongxue_tts2', name: 'Compañero Xiaokang', model: 'WakeNet9' },
+  { id: 'wn9_xiaojianxiaojian_tts2', name: 'Xiaojian Xiaojian', model: 'WakeNet9' },
+  { id: 'wn9_xiaotexiaote_tts2', name: 'Xiaote Xiaote', model: 'WakeNet9' },
+  { id: 'wn9_nihaoxiaoyi_tts2', name: 'Hola, Xiaoyi', model: 'WakeNet9' },
+  { id: 'wn9_nihaobaiying_tts2', name: 'Hola, Baiying', model: 'WakeNet9' },
+  { id: 'wn9_xiaoluxiaolu_tts2', name: 'Xiaolu Xiaolu', model: 'WakeNet9' },
+  { id: 'wn9_nihaodongdong_tts2', name: 'Hola, Dongdong', model: 'WakeNet9' },
+  { id: 'wn9_nihaoxiaoan_tts2', name: 'Hola, Xiaoan', model: 'WakeNet9' },
+  { id: 'wn9_ni3hao3xiao3mai4_tts2', name: 'Hola, Xiaomai', model: 'WakeNet9' },
+  { id: 'wn9_ni3hao3xiao3rui4_tts3', name: 'Hola, Xiaorui', model: 'WakeNet9' },
+  { id: 'wn9_hai1xiao3ou1_tts3', name: 'Hola, Xiaoou', model: 'WakeNet9' }
 ]
 
-// 判断芯片是否支持 WakeNet9
+// Comprobar si el chip es compatible con WakeNet9
 const supportWakeNet9 = computed(() => {
   const chip = props.chipModel.toLowerCase()
   return chip === 'esp32s3' || chip === 'esp32p4'
 })
 
-// 判断芯片是否支持 WakeNet9s
+// Comprobar si el chip es compatible con WakeNet9s
 const supportWakeNet9s = computed(() => {
   const chip = props.chipModel.toLowerCase()
   return chip === 'esp32c3' || chip === 'esp32c5' || chip === 'esp32c6'
 })
 
-// 判断芯片是否支持自定义唤醒词 (MultiNet 目前主要支持 S3)
+// Comprobar si el chip es compatible con palabras de activación personalizadas (MultiNet actualmente es compatible principalmente con S3)
 const supportCustom = computed(() => {
   const chip = props.chipModel.toLowerCase()
   return chip === 'esp32s3'
@@ -269,7 +266,7 @@ const supportCustom = computed(() => {
 
 const canUseAnyWakeword = computed(() => supportWakeNet9.value || supportWakeNet9s.value)
 
-// 根据芯片型号过滤可用的唤醒词
+// Filtrar las palabras de activación disponibles según el modelo de chip
 const availableWakewords = computed(() => {
   if (supportWakeNet9.value) {
     return wakewordData.filter(w => w.model === 'WakeNet9')
@@ -342,7 +339,7 @@ const selectPresetWakeword = (id) => {
   })
 }
 
-// 监听本地自定义设置变化并同步到父组件
+// Observar los cambios en la configuración personalizada local y sincronizarlos con el componente principal
 watch(localCustom, (newVal) => {
   if (isUpdatingFromProps.value) return
   
@@ -355,7 +352,7 @@ watch(localCustom, (newVal) => {
   }
 }, { deep: true })
 
-// 监听父组件属性变化并同步到本地
+// Observar los cambios en las propiedades del componente principal y sincronizarlos localmente
 watch(() => props.modelValue.custom, (newVal) => {
   if (newVal) {
     isUpdatingFromProps.value = true
