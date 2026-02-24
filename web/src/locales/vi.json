@@ -249,7 +249,8 @@
       "confident": "Tự tin",
       "sleepy": "Buồn ngủ",
       "silly": "Ngớ ngẩn",
-      "confused": "Bối rối"
+      "confused": "Bối rối",
+      "eyes": "Mắt"
     },
     "noEmotionConfigured": "Chưa cấu hình cảm xúc",
     "fontLoading": "Đang tải phông chữ...",
@@ -353,7 +354,8 @@
       "confident": "Tự tin",
       "sleepy": "Buồn ngủ",
       "silly": "Ngớ ngẩn",
-      "confused": "Bối rối"
+      "confused": "Bối rối",
+      "eyes": "Mắt"
     }
   },
   "fontConfig": {

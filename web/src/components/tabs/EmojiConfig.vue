@@ -266,7 +266,7 @@ const presetEmojis = [
     name: t('emojiConfig.kottyEmojiName', { size: 240 }),
     description: t('emojiConfig.kottyEmojiDescription', { size: 240 }),
     size: 240,
-    preview: ['neutral', 'happy', 'funny']
+    preview: ['neutral', 'eyes', 'happy', 'funny']
   },
   {
     id: 'kotty128',
@@ -306,7 +306,8 @@ const emotionList = computed(() => [
   { key: 'confident', name: t('emojiConfig.emotions.confident'), emoji: '😏' },
   { key: 'sleepy', name: t('emojiConfig.emotions.sleepy'), emoji: '😴' },
   { key: 'silly', name: t('emojiConfig.emotions.silly'), emoji: '😜' },
-  { key: 'confused', name: t('emojiConfig.emotions.confused'), emoji: '🙄' }
+  { key: 'confused', name: t('emojiConfig.emotions.confused'), emoji: '🙄' },
+  { key: 'eyes', name: t('emojiConfig.emotions.eyes'), emoji: '👀' }
 ])
 
 const localCustom = ref({

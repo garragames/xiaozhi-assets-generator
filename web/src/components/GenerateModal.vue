@@ -273,7 +273,7 @@ const presetEmotionMap = {
   notoemoji128: defaultPresetEmotions,
   kotty64: ['silly', 'sleepy', 'surprised', 'thinking', 'winking'],
   kotty128: ['neutral', 'happy', 'laughing', 'funny'],
-  kotty240: ['neutral', 'happy', 'funny']
+  kotty240: ['neutral', 'eyes', 'happy', 'funny']
 }
 
 const getPresetEmotions = (preset) => presetEmotionMap[preset] || defaultPresetEmotions

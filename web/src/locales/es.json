@@ -207,7 +207,8 @@
       "confident": "Confiado",
       "sleepy": "Somnoliento",
       "silly": "Tonto",
-      "confused": "Confundido"
+      "confused": "Confundido",
+      "eyes": "Ojos"
     },
     "noEmotionConfigured": "No se ha configurado ninguna emoción",
     "fontLoading": "Cargando fuente...",
@@ -311,7 +312,8 @@
       "confident": "Confiado",
       "sleepy": "Somnoliento",
       "silly": "Tonto",
-      "confused": "Confundido"
+      "confused": "Confundido",
+      "eyes": "Ojos"
     }
   },
   "fontConfig": {

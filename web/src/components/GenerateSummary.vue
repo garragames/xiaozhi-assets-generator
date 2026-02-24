@@ -240,7 +240,7 @@ const presetEmotionMap = {
   notoemoji128: defaultPresetEmotions,
   kotty64: ['silly', 'sleepy', 'surprised', 'thinking', 'winking'],
   kotty128: ['neutral', 'happy', 'laughing', 'funny'],
-  kotty240: ['neutral', 'happy', 'funny']
+  kotty240: ['eyes', 'neutral', 'happy', 'funny']
 }
 
 const getPresetEmotions = (preset) => presetEmotionMap[preset] || defaultPresetEmotions
@@ -258,7 +258,8 @@ const emotionList = computed(() => [
   { key: 'surprised', name: t('generateSummary.emotions.surprised'), emoji: '😯' },
   { key: 'thinking', name: t('generateSummary.emotions.thinking'), emoji: '🤔' },
   { key: 'cool', name: t('generateSummary.emotions.cool'), emoji: '😎' },
-  { key: 'sleepy', name: t('generateSummary.emotions.sleepy'), emoji: '😴' }
+  { key: 'sleepy', name: t('generateSummary.emotions.sleepy'), emoji: '😴' },
+  { key: 'eyes', name: t('generateSummary.emotions.eyes'), emoji: '👀' }
 ])
 
 // Lista de emojis disponibles

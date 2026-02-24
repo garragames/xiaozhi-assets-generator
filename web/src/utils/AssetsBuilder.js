@@ -401,7 +401,7 @@ class AssetsBuilder {
       notoemoji128: { size: 128, ext: 'gif', emojis: defaultPresetEmotions },
       kotty64: { size: 64, ext: 'gif', emojis: ['silly', 'sleepy', 'surprised', 'thinking', 'winking'] },
       kotty128: { size: 128, ext: 'gif', emojis: ['neutral', 'happy', 'laughing', 'funny'] },
-      kotty240: { size: 240, ext: 'gif', emojis: ['neutral', 'happy', 'funny'] }
+      kotty240: { size: 240, ext: 'gif', emojis: ['eyes', 'neutral', 'happy', 'funny'] }
     }
     
     if (emoji.type === 'preset') {

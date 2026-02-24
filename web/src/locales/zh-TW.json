@@ -249,7 +249,8 @@
       "confident": "自信",
       "sleepy": "睏倦",
       "silly": "調皮",
-      "confused": "困惑"
+      "confused": "困惑",
+      "eyes": "眼睛"
     },
     "noEmotionConfigured": "未配置表情",
     "fontLoading": "字體載入中...",
@@ -353,7 +354,8 @@
       "confident": "自信",
       "sleepy": "睏倦",
       "silly": "調皮",
-      "confused": "困惑"
+      "confused": "困惑",
+      "eyes": "眼睛"
     }
   },
   "fontConfig": {

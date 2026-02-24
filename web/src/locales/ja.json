@@ -249,7 +249,8 @@
       "confident": "自信",
       "sleepy": "眠い",
       "silly": "ばかげた",
-      "confused": "混乱"
+      "confused": "混乱",
+      "eyes": "目"
     },
     "noEmotionConfigured": "感情が設定されていません",
     "fontLoading": "フォント読み込み中...",
@@ -353,7 +354,8 @@
       "confident": "自信",
       "sleepy": "眠い",
       "silly": "ばかげた",
-      "confused": "混乱"
+      "confused": "混乱",
+      "eyes": "目"
     }
   },
   "fontConfig": {

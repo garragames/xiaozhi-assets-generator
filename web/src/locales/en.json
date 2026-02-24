@@ -249,7 +249,8 @@
       "confident": "Confident",
       "sleepy": "Sleepy",
       "silly": "Silly",
-      "confused": "Confused"
+      "confused": "Confused",
+      "eyes": "Eyes"
     },
     "noEmotionConfigured": "No emotion configured",
     "fontLoading": "Font loading...",
@@ -353,7 +354,8 @@
       "confident": "Confident",
       "sleepy": "Sleepy",
       "silly": "Silly",
-      "confused": "Confused"
+      "confused": "Confused",
+      "eyes": "Eyes"
     }
   },
   "fontConfig": {
