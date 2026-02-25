@@ -43,6 +43,10 @@
                 <span class="font-medium">{{ getFontName() }}</span>
               </div>
               <div class="flex justify-between">
+                <span class="text-gray-600">{{ $t('generateModal.state') }}</span>
+                <span class="font-medium">{{ getStateName() }}</span>
+              </div>
+              <div class="flex justify-between">
                 <span class="text-gray-600">{{ $t('generateModal.emoji') }}</span>
                 <span class="font-medium">{{ getEmojiName() }}</span>
               </div>
@@ -284,11 +288,12 @@ const progressSteps = computed(() => [
   { id: 1, name: t('progressSteps.init'), status: 'pending' },
   { id: 2, name: t('progressSteps.font'), status: 'pending' },
   { id: 3, name: t('progressSteps.wakeword'), status: 'pending' },
-  { id: 4, name: t('progressSteps.emoji'), status: 'pending' },
-  { id: 5, name: t('progressSteps.background'), status: 'pending' },
-  { id: 6, name: t('progressSteps.index'), status: 'pending' },
-  { id: 7, name: t('progressSteps.spiffs'), status: 'pending' },
-  { id: 8, name: t('progressSteps.package'), status: 'pending' }
+  { id: 4, name: t('progressSteps.state'), status: 'pending' },
+  { id: 5, name: t('progressSteps.emoji'), status: 'pending' },
+  { id: 6, name: t('progressSteps.background'), status: 'pending' },
+  { id: 7, name: t('progressSteps.index'), status: 'pending' },
+  { id: 8, name: t('progressSteps.spiffs'), status: 'pending' },
+  { id: 9, name: t('progressSteps.package'), status: 'pending' }
 ])
 
 const fileList = ref([])
@@ -379,6 +384,14 @@ const getFontName = () => {
   return t('generateModal.customFont')
 }
 
+const getStateName = () => {
+  if (props.config.theme.state.type === 'custom') {
+    const count = Object.keys(props.config.theme.state.custom?.images || {}).length
+    return t('generateModal.customState', { count })
+  }
+  return t('generateModal.noStatePack')
+}
+
 const getEmojiName = () => {
   if (props.config.theme.emoji.type === 'preset' && props.config.theme.emoji.preset) {
     if (props.config.theme.emoji.preset === 'twemoji32') return 'Twemoji 32×32'
@@ -452,6 +465,50 @@ const initializeFileList = () => {
       size: estimatedSize > 1024 ? `${(estimatedSize/1024).toFixed(1)}MB` : `${Math.round(estimatedSize)}KB`,
       estimated: true
     })
+  }
+
+  // Agregar archivos de estados
+  if (props.config.theme.state.type === 'custom') {
+    const stateCustom = props.config.theme.state.custom
+    const stateMap = stateCustom.stateMap || {}
+    const fileMap = stateCustom.fileMap || {}
+    const images = stateCustom.images || {}
+
+    if (Object.keys(stateMap).length === 0 || Object.keys(fileMap).length === 0) {
+      console.error(t('errors.incompatibleStateData') || 'Datos de estados incompatibles')
+    } else {
+      const uniqueFiles = new Map()
+      Object.entries(stateMap).forEach(([state, fileHash]) => {
+        const file = fileMap[fileHash]
+        if (file) {
+          if (!uniqueFiles.has(fileHash)) {
+            const fileSizeKB = Math.round(file.size / 1024)
+            uniqueFiles.set(fileHash, {
+              file,
+              size: fileSizeKB > 1024 ? `${(fileSizeKB/1024).toFixed(1)}MB` : `${fileSizeKB}KB`,
+              states: []
+            })
+          }
+          uniqueFiles.get(fileHash).states.push(state)
+        }
+      })
+
+      uniqueFiles.forEach((fileInfo, fileHash) => {
+        const stateNames = fileInfo.states.join(', ')
+        const isShared = fileInfo.states.length > 1
+        fileList.value.push({
+          id: `state_${fileHash.substring(0, 8)}`,
+          name: `state_${fileHash.substring(0, 8)}.${fileInfo.file.name.split('.').pop()}`,
+          description: isShared
+            ? `Imagen de estado compartida (${stateNames})`
+            : `Imagen de estado ${stateNames}`,
+          icon: ImageIcon,
+          iconColor: isShared ? 'text-purple-500' : 'text-blue-500',
+          size: fileInfo.size,
+          isCustomState: true
+        })
+      })
+    }
   }
 
   // Agregar archivos de emoji

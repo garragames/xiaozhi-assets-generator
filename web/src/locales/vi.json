@@ -205,6 +205,7 @@
     "tabs": {
       "wakeword": "Cấu hình từ đánh thức",
       "font": "Cấu hình phông chữ",
+      "state": "Gói trạng thái",
       "emoji": "Bộ sưu tập biểu tượng cảm xúc",
       "background": "Nền trò chuyện"
     }

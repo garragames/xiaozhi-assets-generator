@@ -60,6 +60,32 @@ class StorageHelper {
   }
 
   /**
+   * Guardado automático para archivos de estados.
+   * @param {string} stateName - Nombre del estado o hash del archivo (si comienza con state_hash_)
+   * @param {File} file - Archivo de imagen del estado
+   * @param {Object} config - Configuración del estado
+   * @returns {Promise<void>}
+   */
+  static async saveStateFile(stateName, file, config = {}) {
+    if (file && stateName) {
+      const key = stateName.startsWith('state_hash_') ? stateName : `state_${stateName}`
+      try {
+        const width = config?.size?.width ?? 160
+        const height = config?.size?.height ?? 120
+        await configStorage.saveFile(key, file, 'state', {
+          name: stateName,
+          size: { width, height },
+          format: config?.format,
+          states: config?.states
+        })
+        console.log(`Archivo de estado guardado: ${key} - ${file.name}`)
+      } catch (error) {
+        console.warn(`Error al guardar el archivo de estado: ${stateName}`, error)
+      }
+    }
+  }
+
+  /**
    * Proporciona guardado automático para archivos de fondo.
    * @param {string} mode - modo ('light' o 'dark')
    * @param {File} file - El archivo de fondo
@@ -121,6 +147,22 @@ class StorageHelper {
   }
 
   /**
+   * Restaura archivo de estado.
+   * @param {string} stateName - Nombre del estado o hash
+   * @returns {Promise<File|null>}
+   */
+  static async restoreStateFile(stateName) {
+    if (!stateName) return null
+    try {
+      const key = stateName.startsWith('state_hash_') ? stateName : `state_${stateName}`
+      return await configStorage.loadFile(key)
+    } catch (error) {
+      console.warn(`Error al restaurar el archivo de estado: ${stateName}`, error)
+      return null
+    }
+  }
+
+  /**
    * Restaura el archivo de fondo.
    * @param {string} mode - modo ('light' o 'dark')
    * @returns {Promise<File|null>}
@@ -166,6 +208,22 @@ class StorageHelper {
       console.log(`Archivo de emoji eliminado: ${key}`)
     } catch (error) {
       console.warn(`Error al eliminar el archivo de emoji: ${emojiName}`, error)
+    }
+  }
+
+  /**
+   * Elimina archivo de estado.
+   * @param {string} stateName - Nombre del estado o hash
+   * @returns {Promise<void>}
+   */
+  static async deleteStateFile(stateName) {
+    if (!stateName) return
+    try {
+      const key = stateName.startsWith('state_hash_') ? stateName : `state_${stateName}`
+      await configStorage.deleteFile(key)
+      console.log(`Archivo de estado eliminado: ${key}`)
+    } catch (error) {
+      console.warn(`Error al eliminar el archivo de estado: ${stateName}`, error)
     }
   }
 

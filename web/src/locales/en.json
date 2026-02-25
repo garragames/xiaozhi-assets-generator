@@ -44,6 +44,7 @@
     "resolution": "Resolution:",
     "wakeword": "Wake Word:",
     "font": "Font:",
+    "state": "State Pack:",
     "emoji": "Emoji Package:",
     "fileList": "Included Files List",
     "estimated": "Estimated",
@@ -61,7 +62,9 @@
     "flashingError": "Flashing Error",
     "flashingInProgress": "Flashing in progress, please do not close the window",
     "customFont": "Custom Font",
+    "customState": "Custom State Pack ({count})",
     "customEmoji": "Custom Emoji Package",
+    "noStatePack": "No state pack",
     "notConfigured": "Not Configured",
     "wakewordNames": {
       "wn9s_hilexin": "Hi, Espressif",
@@ -75,6 +78,7 @@
     "init": "Initialize Generator",
     "font": "Process Font Files",
     "wakeword": "Package Wake Word Model",
+    "state": "Process State Images",
     "emoji": "Process Emoji Images",
     "background": "Process Background Images",
     "index": "Generate Index File",
@@ -131,7 +135,8 @@
     "fileTooLarge": "Flash failed: File size {fileSize}MB exceeds assets partition size {partitionSize}MB. Please reduce configuration content or use a device with larger capacity.",
     "flashCancelConfirm": "Are you sure you want to cancel flashing?",
     "oldDataCleared": "Old version emoji data structure has been detected and cleared.\n\nThe new version uses file deduplication technology to save storage space.\n\nPlease re-upload custom emoji images.",
-    "incompatibleEmojiData": "Incompatible emoji data detected, please reconfigure"
+    "incompatibleEmojiData": "Incompatible emoji data detected, please reconfigure",
+    "incompatibleStateData": "Incompatible state data detected, please reconfigure"
   },
   "flashProgress": {
     "authTokenMissing": "Authentication token not found",
@@ -199,12 +204,13 @@
   },
   "themeDesign": {
     "title": "Step 2: Theme Design",
-    "description": "Configure wake word, font, emoji and background to customize your Xiaozhi AI theme.",
+    "description": "Configure wake word, font, state packs, emoji and background to customize your Xiaozhi AI theme.",
     "previous": "Previous",
     "next": "Next",
     "tabs": {
       "wakeword": "Wake Word Config",
       "font": "Font Config",
+      "state": "State Pack",
       "emoji": "Emoji Collection",
       "background": "Chat Background"
     }
@@ -356,6 +362,35 @@
       "silly": "Silly",
       "confused": "Confused",
       "eyes": "Eyes"
+    }
+  },
+  "stateConfig": {
+    "title": "State Pack Configuration",
+    "description": "Upload and manage images for assistant states.",
+    "noStatePack": "No state pack",
+    "noStatePackDescription": "State images will not be included in the package.",
+    "customStatePack": "Custom state pack",
+    "customStatePackConfig": "Custom state pack settings",
+    "maxImageWidth": "Max image width (px)",
+    "maxImageHeight": "Max image height (px)",
+    "uploadStateImages": "Upload state images",
+    "clickToUploadOrDrag": "Click to upload or drag here",
+    "required": "Required",
+    "requiredNotice": "* 'standby' state is required. Missing states will reuse the standby image.",
+    "selectValidFormat": "Please select a valid image (PNG/JPG/GIF/WEBP)",
+    "sharedFileMessage": "State {stateKey} uses the same file as {existingStates} (shared storage)",
+    "fileDeleted": "File {fileHash} has been deleted (no other state references it)",
+    "fileRetained": "File {fileHash} is still used by other states, retained",
+    "imageLoadFailed": "Failed to load state image",
+    "addState": "Add state",
+    "removeState": "Remove",
+    "states": {
+      "standby": "Standby",
+      "listening": "Listening",
+      "thinking": "Thinking",
+      "speaking": "Speaking",
+      "sleeping": "Sleeping",
+      "error": "Error"
     }
   },
   "fontConfig": {

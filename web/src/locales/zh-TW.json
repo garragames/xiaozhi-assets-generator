@@ -205,6 +205,7 @@
     "tabs": {
       "wakeword": "喚醒詞配置",
       "font": "字體配置",
+      "state": "狀態包",
       "emoji": "表情集合",
       "background": "聊天背景"
     }

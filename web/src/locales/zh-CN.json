@@ -163,6 +163,7 @@
     "tabs": {
       "wakeword": "唤醒词配置",
       "font": "字体配置",
+      "state": "状态包",
       "emoji": "表情集合",
       "background": "聊天背景"
     }

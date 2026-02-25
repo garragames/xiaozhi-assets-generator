@@ -148,6 +148,31 @@ class ConfigStorage {
         }
       }
 
+      // State images (similar structure to emoji)
+      if (cloned?.theme?.state?.type === 'custom') {
+        if (!cloned.theme.state.custom) cloned.theme.state.custom = {}
+
+        const images = cloned.theme.state?.custom?.images || {}
+        const sanitizedImages = {}
+        Object.keys(images).forEach((k) => {
+          sanitizedImages[k] = null
+        })
+        cloned.theme.state.custom.images = sanitizedImages
+
+        if (cloned.theme.state.custom.stateMap) {
+          // stateMap only contains string mappings
+        }
+
+        if (cloned.theme.state.custom.fileMap) {
+          const fileMap = cloned.theme.state.custom.fileMap
+          const sanitizedFileMap = {}
+          Object.keys(fileMap).forEach((hash) => {
+            sanitizedFileMap[hash] = null
+          })
+          cloned.theme.state.custom.fileMap = sanitizedFileMap
+        }
+      }
+
       // Background images
       if (cloned?.theme?.skin?.light) {
         cloned.theme.skin.light.backgroundImage = null

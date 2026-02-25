@@ -261,6 +261,71 @@ class AssetsBuilder {
       }
     }
 
+    // Restaurar imágenes de estados personalizadas (estructura similar a emojis)
+    if (config.theme?.state?.type === 'custom' && config.theme.state.custom) {
+      const stateCustom = config.theme.state.custom
+      const stateMap = stateCustom.stateMap || {}
+      const fileMap = stateCustom.fileMap || {}
+      const images = stateCustom.images || {}
+
+      if (Object.keys(stateMap).length > 0 || Object.keys(fileMap).length > 0) {
+        const hashesToRestore = new Set()
+        for (const hash of Object.keys(fileMap)) {
+          if (fileMap[hash] === null) {
+            hashesToRestore.add(hash)
+          }
+        }
+
+        for (const hash of hashesToRestore) {
+          let fileKey = `state_hash_${hash}`
+          let restored = await this.restoreResourceFromStorage(fileKey)
+          if (!restored) {
+            const oldKey = `state_${hash}`
+            restored = await this.restoreResourceFromStorage(oldKey)
+            if (restored) {
+              fileKey = oldKey
+            }
+          }
+
+          if (restored) {
+            const resource = this.resources.get(fileKey)
+            if (resource) {
+              fileMap[hash] = resource.file
+              const statesUsingHash = Object.entries(stateMap)
+                .filter(([_, h]) => h === hash)
+                .map(([state, _]) => state)
+              statesUsingHash.forEach(state => {
+                images[state] = resource.file
+              })
+              restoredFiles.push(`State file ${hash.substring(0, 8)}... (used for: ${statesUsingHash.join(', ')})`)
+            }
+          }
+        }
+
+        Object.keys(fileMap).forEach(hash => {
+          config.theme.state.custom.fileMap[hash] = fileMap[hash]
+        })
+        Object.keys(images).forEach(state => {
+          config.theme.state.custom.images[state] = images[state]
+        })
+      } else {
+        // Estructura antigua: restaurar uno por uno si existiera
+        for (const [stateName, file] of Object.entries(images)) {
+          if (file === null) {
+            const stateKey = `state_${stateName}`
+            if (await this.restoreResourceFromStorage(stateKey)) {
+              const resource = this.resources.get(stateKey)
+              if (resource) {
+                images[stateName] = resource.file
+                restoredFiles.push(`State ${stateName}: ${resource.filename}`)
+              }
+            }
+          }
+        }
+        config.theme.state.custom.images = images
+      }
+    }
+
     // Restaurar imágenes de fondo
     if (config.theme?.skin?.light?.backgroundType === 'image' && config.theme.skin.light.backgroundImage === null) {
       const bgKey = 'background_light'
@@ -467,6 +532,80 @@ class AssetsBuilder {
   }
 
   /**
+   * Obtiene la información de la colección de estados.
+   * @returns {Array} Array de información de estados
+   */
+  getStateCollectionInfo() {
+    if (!this.config || !this.config.theme || !this.config.theme.state) {
+      return []
+    }
+
+    const state = this.config.theme.state
+    const collection = []
+    const defaultStates = ['standby', 'listening', 'thinking', 'speaking']
+
+    if (state.type === 'custom') {
+      const images = state.custom.images || {}
+      const stateMap = state.custom.stateMap || {}
+      const fileMap = state.custom.fileMap || {}
+      const size = state.custom.size || { width: 160, height: 120 }
+      const order = state.custom.order || Object.keys(stateMap)
+
+      if (Object.keys(stateMap).length === 0 || Object.keys(fileMap).length === 0) {
+        // Permitir paquete vacío
+        if (Object.keys(stateMap).length === 0 && Object.keys(fileMap).length === 0) {
+          return []
+        }
+        console.error('❌ Error: Estructura de datos de estados incompatible (falta fileMap o stateMap).')
+        throw new Error('Incompatible state data structure: Missing fileMap or stateMap. Please reconfigure states.')
+      }
+
+      const hashToFilename = new Map()
+
+      order.forEach((stateName) => {
+        const fileHash = stateMap[stateName]
+        const file = fileMap[fileHash]
+        if (file) {
+          if (!hashToFilename.has(fileHash)) {
+            const fileExtension = file.name ? file.name.split('.').pop().toLowerCase() : 'png'
+            const sharedFilename = `state_${fileHash.substring(0, 8)}.${fileExtension}`
+            hashToFilename.set(fileHash, sharedFilename)
+          }
+
+          const sharedFilename = hashToFilename.get(fileHash)
+          collection.push({
+            name: stateName,
+            file: sharedFilename,
+            source: file,
+            fileHash,
+            size: { ...size }
+          })
+        }
+      })
+
+      console.log(`Deduplicación de estados: ${Object.keys(stateMap).length} estados usan ${hashToFilename.size} archivos de imagen diferentes`)
+
+      // Asegurar estado standby
+      if (!collection.find(item => item.name === 'standby') && images.standby) {
+        const hash = stateMap.standby
+        const file = fileMap[hash]
+        const ext = file?.name ? file.name.split('.').pop().toLowerCase() : 'png'
+        collection.push({
+          name: 'standby',
+          file: `state_${hash.substring(0, 8)}.${ext}`,
+          source: file,
+          fileHash: hash,
+          size: { ...size }
+        })
+      }
+    } else {
+      return []
+    }
+
+    return collection
+  }
+
+  /**
    * Obtiene la información de configuración de la piel.
    * @returns {Object} Información de configuración de la piel
    */
@@ -570,6 +709,15 @@ class AssetsBuilder {
       }))
     }
 
+    // Añadir colección de estados
+    const stateCollection = this.getStateCollectionInfo()
+    if (stateCollection.length > 0) {
+      indexData.state_collection = stateCollection.map(state => ({
+        name: state.name,
+        file: state.file
+      }))
+    }
+
     console.log('Generated index.json data:', JSON.stringify(indexData, null, 2))
 
     return indexData
@@ -632,6 +780,28 @@ class AssetsBuilder {
         source: emoji.source,
         size: emoji.size,
         fileHash: emoji.fileHash  // Pasar la información del hash
+      })
+    })
+
+    // Añadir archivos de estados (deduplicación similar a emojis)
+    const stateCollection = this.getStateCollectionInfo()
+    const addedStateHashes = new Set()
+    stateCollection.forEach(state => {
+      if (state.fileHash) {
+        if (addedStateHashes.has(state.fileHash)) {
+          console.log(`Skipping duplicate state file: ${state.name} -> ${state.file} (hash: ${state.fileHash.substring(0, 8)})`)
+          return
+        }
+        addedStateHashes.add(state.fileHash)
+      }
+
+      resources.files.push({
+        type: 'state',
+        name: state.name,
+        filename: state.file,
+        source: state.source,
+        size: state.size,
+        fileHash: state.fileHash
       })
     })
 
@@ -933,11 +1103,72 @@ class AssetsBuilder {
       case 'emoji':
         await this.processEmojiFile(resource)
         break
+      case 'state':
+        await this.processStateFile(resource)
+        break
       case 'background':
         await this.processBackgroundFile(resource)
         break
       default:
         console.warn(`Unknown resource type: ${resource.type}`)
+    }
+  }
+
+  /**
+   * Procesa el archivo de estado (misma lógica que emojis personalizados).
+   * @param {Object} resource - Configuración del recurso
+   */
+  async processStateFile(resource) {
+    let imageData
+    let needsScaling = false
+    let imageFormat = 'png'
+    let isGif = false
+
+    const file = resource.source
+    isGif = this.isGifFile(file)
+    const fileExtension = file.name.split('.').pop().toLowerCase()
+    imageFormat = fileExtension
+
+    try {
+      const actualDimensions = await this.getImageDimensions(file)
+      const targetSize = resource.size || { width: 160, height: 120 }
+      if (actualDimensions.width > targetSize.width || actualDimensions.height > targetSize.height) {
+        needsScaling = true
+        console.log(`State ${resource.name} needs scaling: ${actualDimensions.width}x${actualDimensions.height} -> ${targetSize.width}x${targetSize.height}`)
+      }
+    } catch (error) {
+      console.warn(`Failed to get state image dimensions: ${resource.name}`, error)
+    }
+
+    if (!needsScaling) {
+      imageData = await this.fileToArrayBuffer(file)
+    } else {
+      try {
+        const targetSize = resource.size || { width: 160, height: 120 }
+        if (isGif) {
+          const scaledGifBlob = await this.gifScaler.scaleGif(resource.source, {
+            maxWidth: targetSize.width,
+            maxHeight: targetSize.height,
+            keepAspectRatio: true,
+            lossy: 30
+          })
+          imageData = await this.fileToArrayBuffer(scaledGifBlob)
+        } else {
+          imageData = await this.scaleImageToFit(resource.source, targetSize, imageFormat)
+        }
+      } catch (error) {
+        console.error(`Failed to scale state image: ${resource.name}`, error)
+        imageData = await this.fileToArrayBuffer(resource.source)
+      }
+    }
+
+    this.spiffsGenerator.addFile(resource.filename, imageData, {
+      width: resource.size?.width || 0,
+      height: resource.size?.height || 0
+    })
+
+    if (resource.fileHash) {
+      console.log(`State file added: ${resource.filename} (hash: ${resource.fileHash.substring(0, 8)})`)
     }
   }
 
@@ -1457,6 +1688,7 @@ class AssetsBuilder {
       wakeword: 0,
       font: 0, 
       emoji: 0,
+      state: 0,
       background: 0
     }
     
@@ -1477,6 +1709,9 @@ class AssetsBuilder {
           break
         case 'emoji':
           description = `Emoji: ${file.name} (${file.size.width}x${file.size.height})`
+          break
+        case 'state':
+          description = `State: ${file.name} (${file.size.width}x${file.size.height})`
           break
         case 'background':
           description = `${file.mode === 'light' ? 'Light' : 'Dark'} mode background`

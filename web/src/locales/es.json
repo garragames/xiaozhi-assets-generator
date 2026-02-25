@@ -44,6 +44,7 @@
     "resolution": "Resolución:",
     "wakeword": "Palabra de activación:",
     "font": "Fuente:",
+    "state": "Paquete de estados:",
     "emoji": "Paquete de emojis:",
     "fileList": "Lista de archivos incluidos",
     "estimated": "Estimado",
@@ -61,7 +62,9 @@
     "flashingError": "Error de grabación",
     "flashingInProgress": "Grabando, por favor no cierre la ventana",
     "customFont": "Fuente personalizada",
+    "customState": "Paquete de estados personalizado ({count})",
     "customEmoji": "Paquete de emojis personalizado",
+    "noStatePack": "Sin paquete de estados",
     "notConfigured": "No configurado",
     "wakewordNames": {
       "wn9s_hilexin": "Hi, Lexin",
@@ -75,6 +78,7 @@
     "init": "Inicializando generador",
     "font": "Procesando archivo de fuente",
     "wakeword": "Empaquetando modelo de palabra de activación",
+    "state": "Procesando imágenes de estados",
     "emoji": "Procesando imágenes de emojis",
     "background": "Procesando imágenes de fondo",
     "index": "Generando archivo de índice",
@@ -89,7 +93,8 @@
     "fileTooLarge": "Error de grabación: el tamaño del archivo {fileSize}MB excede el tamaño de la partición de assets {partitionSize}MB, por favor reduzca el contenido de la configuración o use un dispositivo con mayor capacidad.",
     "flashCancelConfirm": "¿Está seguro de que desea cancelar la grabación?",
     "oldDataCleared": "Se detectó que la estructura de datos de emojis de la versión anterior ha sido eliminada.\n\nLa nueva versión utiliza tecnología de deduplicación de archivos para ahorrar espacio de almacenamiento.\n\nPor favor, vuelva a cargar las imágenes de emojis personalizadas.",
-    "incompatibleEmojiData": "Se detectaron datos de emojis incompatibles, por favor reconfigure"
+    "incompatibleEmojiData": "Se detectaron datos de emojis incompatibles, por favor reconfigure",
+    "incompatibleStateData": "Se detectaron datos de estados incompatibles, por favor reconfigure"
   },
   "flashProgress": {
     "authTokenMissing": "No se encontró el token de autenticación",
@@ -157,12 +162,13 @@
   },
   "themeDesign": {
     "title": "Paso 2: Diseño del tema",
-    "description": "Configure la palabra de activación, la fuente, los emojis y el fondo para personalizar su tema de Xiao Zhi AI.",
+    "description": "Configure la palabra de activación, la fuente, los paquetes de estados, los emojis y el fondo para personalizar su tema de Xiao Zhi AI.",
     "previous": "Anterior",
     "next": "Siguiente",
     "tabs": {
       "wakeword": "Configuración de la palabra de activación",
       "font": "Configuración de la fuente",
+      "state": "Paquete de estados",
       "emoji": "Colección de emojis",
       "background": "Fondo de chat"
     }
@@ -314,6 +320,35 @@
       "silly": "Tonto",
       "confused": "Confundido",
       "eyes": "Ojos"
+    }
+  },
+  "stateConfig": {
+    "title": "Configuración del paquete de estados",
+    "description": "Suba o administre imágenes para los diferentes estados del asistente.",
+    "noStatePack": "Sin paquete de estados",
+    "noStatePackDescription": "No se incluirán imágenes de estados en el paquete.",
+    "customStatePack": "Paquete de estados personalizado",
+    "customStatePackConfig": "Configuración del paquete de estados",
+    "maxImageWidth": "Ancho máximo de imagen (px)",
+    "maxImageHeight": "Alto máximo de imagen (px)",
+    "uploadStateImages": "Subir imágenes de estados",
+    "clickToUploadOrDrag": "Haga clic para cargar o arrastre aquí",
+    "required": "Requerido",
+    "requiredNotice": "* El estado 'standby' es obligatorio. Si faltan otros estados, se usará la imagen de standby.",
+    "selectValidFormat": "Seleccione una imagen válida (PNG/JPG/GIF/WEBP)",
+    "sharedFileMessage": "El estado {stateKey} utiliza el mismo archivo que {existingStates} (almacenamiento compartido)",
+    "fileDeleted": "El archivo {fileHash} ha sido eliminado (ningún otro estado lo usa)",
+    "fileRetained": "El archivo {fileHash} todavía lo utilizan otros estados, se conserva",
+    "imageLoadFailed": "Error al cargar la imagen del estado",
+    "addState": "Agregar estado",
+    "removeState": "Eliminar",
+    "states": {
+      "standby": "Espera",
+      "listening": "Escuchando",
+      "thinking": "Pensando",
+      "speaking": "Hablando",
+      "sleeping": "Durmiendo",
+      "error": "Error"
     }
   },
   "fontConfig": {

@@ -170,6 +170,16 @@ const config = ref({
         images: {}
       }
     },
+    state: {
+      type: 'none',
+      custom: {
+        size: { width: 160, height: 120 },
+        images: {},
+        fileMap: {},
+        stateMap: {},
+        order: ['standby', 'listening', 'thinking', 'speaking']
+      }
+    },
     skin: {
       light: {
         backgroundType: 'color',
@@ -380,6 +390,28 @@ const loadConfigFromStorage = async () => {
     if (storedData) {
       // Restaurar la configuración (pero no restaurar el paso y la pestaña, siempre comenzar desde el primer paso)
       config.value = storedData.config
+      // Asegurar estructura de paquete de estados
+      if (!config.value.theme.state) {
+        config.value.theme.state = {
+          type: 'none',
+          custom: {
+            size: { width: 160, height: 120 },
+            images: {},
+            fileMap: {},
+            stateMap: {},
+            order: ['standby', 'listening', 'thinking', 'speaking']
+          }
+        }
+      } else {
+        // Garantizar subcampos
+        const st = config.value.theme.state
+        if (!st.custom) st.custom = {}
+        st.custom.size = st.custom.size || { width: 160, height: 120 }
+        st.custom.images = st.custom.images || {}
+        st.custom.fileMap = st.custom.fileMap || {}
+        st.custom.stateMap = st.custom.stateMap || {}
+        st.custom.order = st.custom.order || ['standby', 'listening', 'thinking', 'speaking']
+      }
       // Siempre comenzar desde el primer paso
       currentStep.value = 0
       activeThemeTab.value = 'wakeword'
@@ -427,6 +459,34 @@ const loadConfigFromStorage = async () => {
         }
       } catch (e) {
         console.error('Error al actualizar la referencia de configuración de emoji:', e)
+      }
+
+      // Actualizar referencias de estado para evitar proxies
+      try {
+        const stateCustom = config.value?.theme?.state?.custom || {}
+        const images = stateCustom.images || {}
+        const fileMap = stateCustom.fileMap || {}
+        const stateMap = stateCustom.stateMap || {}
+        const order = stateCustom.order || []
+
+        config.value = {
+          ...config.value,
+          theme: {
+            ...config.value.theme,
+            state: {
+              ...config.value.theme.state,
+              custom: {
+                ...stateCustom,
+                images: { ...images },
+                fileMap: { ...fileMap },
+                stateMap: { ...stateMap },
+                order: [...order]
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error al actualizar la referencia de configuración de estados:', e)
       }
       
     } else {
@@ -626,4 +686,3 @@ const resetAutoHideTimer = () => {
   }, 5000)
 }
 </script>
-

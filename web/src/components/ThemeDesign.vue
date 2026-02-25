@@ -39,6 +39,13 @@
         v-if="currentTab === 'font'"
         v-model="localValue.font"
       />
+
+      <StateConfig 
+        v-if="currentTab === 'state'"
+        v-model="localValue.state"
+        :displayWidth="localValue?.chip?.display?.width || 320"
+        :displayHeight="localValue?.chip?.display?.height || 240"
+      />
       
       <EmojiConfig 
         v-if="currentTab === 'emoji'"
@@ -78,6 +85,7 @@ import WakewordConfig from './tabs/WakewordConfig.vue'
 import FontConfig from './tabs/FontConfig.vue'
 import EmojiConfig from './tabs/EmojiConfig.vue'
 import BackgroundConfig from './tabs/BackgroundConfig.vue'
+import StateConfig from './tabs/StateConfig.vue'
 
 // Icons (simple SVG components)
 const MicrophoneIcon = {
@@ -165,6 +173,7 @@ const currentTab = ref(props.activeTab)
 const tabs = computed(() => [
   { id: 'wakeword', name: t('themeDesign.tabs.wakeword'), icon: MicrophoneIcon },
   { id: 'font', name: t('themeDesign.tabs.font'), icon: FontIcon },
+  { id: 'state', name: t('themeDesign.tabs.state'), icon: EmojiIcon },
   { id: 'emoji', name: t('themeDesign.tabs.emoji'), icon: EmojiIcon },
   { id: 'background', name: t('themeDesign.tabs.background'), icon: BackgroundIcon }
 ])
