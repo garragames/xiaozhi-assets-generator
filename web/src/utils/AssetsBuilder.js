@@ -542,9 +542,28 @@ class AssetsBuilder {
 
     const state = this.config.theme.state
     const collection = []
-    const defaultStates = ['standby', 'listening', 'thinking', 'speaking']
+    const defaultStates = ['standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error']
+    const presetMeta = {
+      state_kotty: { size: { width: 240, height: 240 }, ext: 'png', states: [
+        'standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error'
+      ]},
+      state_echoear: { size: { width: 160, height: 120 }, ext: 'png', states: [
+        'standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error'
+      ]}
+    }
 
-    if (state.type === 'custom') {
+    if (state.type === 'preset') {
+      const meta = presetMeta[state.preset]
+      if (!meta) return []
+      meta.states.forEach(name => {
+        collection.push({
+          name,
+          file: `${name}.${meta.ext}`,
+          source: `preset:${state.preset}`,
+          size: { ...meta.size }
+        })
+      })
+    } else if (state.type === 'custom') {
       const images = state.custom.images || {}
       const stateMap = state.custom.stateMap || {}
       const fileMap = state.custom.fileMap || {}
@@ -1124,7 +1143,22 @@ class AssetsBuilder {
     let imageFormat = 'png'
     let isGif = false
 
-    const file = resource.source
+    let file = resource.source
+
+    if (typeof resource.source === 'string' && resource.source.startsWith('preset:')) {
+      const presetName = resource.source.replace('preset:', '')
+      imageData = await this.loadPresetState(presetName, resource.name)
+      this.spiffsGenerator.addFile(resource.filename, imageData, {
+        width: resource.size?.width || 0,
+        height: resource.size?.height || 0
+      })
+      if (resource.fileHash) {
+        console.log(`State file added (preset): ${resource.filename}`)
+      }
+      return
+    }
+
+    file = resource.source
     isGif = this.isGifFile(file)
     const fileExtension = file.name.split('.').pop().toLowerCase()
     imageFormat = fileExtension
@@ -1347,6 +1381,30 @@ class AssetsBuilder {
       return await response.arrayBuffer()
     } catch (error) {
       throw new Error(`Failed to load preset emoji: ${presetName}/${emojiName} - ${error.message}`)
+    }
+  }
+
+  /**
+   * Carga estado preestablecido.
+   * @param {string} presetName - Nombre del preajuste (state_kotty/state_echoear)
+   * @param {string} stateName - Nombre del estado
+   * @returns {Promise<ArrayBuffer>} Datos del estado
+   */
+  async loadPresetState(presetName, stateName) {
+    const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/'
+    const tryFetch = async (ext) => {
+      const response = await fetch(`${base}static/${presetName}/${stateName}.${ext}`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      return await response.arrayBuffer()
+    }
+    try {
+      return await tryFetch('png')
+    } catch (errorPng) {
+      try {
+        return await tryFetch('gif')
+      } catch (errorGif) {
+        throw new Error(`Failed to load preset state: ${presetName}/${stateName} - png: ${errorPng.message}; gif: ${errorGif.message}`)
+      }
     }
   }
 

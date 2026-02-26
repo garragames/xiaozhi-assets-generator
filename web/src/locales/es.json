@@ -327,8 +327,11 @@
     "description": "Suba o administre imágenes para los diferentes estados del asistente.",
     "noStatePack": "Sin paquete de estados",
     "noStatePackDescription": "No se incluirán imágenes de estados en el paquete.",
+    "presetStatePack": "Paquete de estados preestablecido",
+    "selectPresetStatePack": "Seleccione un paquete de estados preestablecido",
     "customStatePack": "Paquete de estados personalizado",
     "customStatePackConfig": "Configuración del paquete de estados",
+    "size": "Tamaño",
     "maxImageWidth": "Ancho máximo de imagen (px)",
     "maxImageHeight": "Alto máximo de imagen (px)",
     "uploadStateImages": "Subir imágenes de estados",
@@ -342,13 +345,22 @@
     "imageLoadFailed": "Error al cargar la imagen del estado",
     "addState": "Agregar estado",
     "removeState": "Eliminar",
+    "kottyStatePack": "Estados Kotty",
+    "kottyStateDescription": "Colección Kotty para estados del asistente",
+    "echoearStatePack": "Estados EchoEar",
+    "echoearStateDescription": "Colección EchoEar preestablecida",
     "states": {
       "standby": "Espera",
+      "starting": "Iniciando",
+      "wifi_config": "Configurando WiFi",
+      "connecting": "Conectando",
       "listening": "Escuchando",
       "thinking": "Pensando",
       "speaking": "Hablando",
-      "sleeping": "Durmiendo",
-      "error": "Error"
+      "activating": "Activando",
+      "upgrading": "Actualizando",
+      "audio_testing": "Probando audio",
+      "fatal_error": "Error fatal"
     }
   },
   "fontConfig": {

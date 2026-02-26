@@ -369,8 +369,11 @@
     "description": "Upload and manage images for assistant states.",
     "noStatePack": "No state pack",
     "noStatePackDescription": "State images will not be included in the package.",
+    "presetStatePack": "Preset state pack",
+    "selectPresetStatePack": "Select a preset state pack",
     "customStatePack": "Custom state pack",
     "customStatePackConfig": "Custom state pack settings",
+    "size": "Size",
     "maxImageWidth": "Max image width (px)",
     "maxImageHeight": "Max image height (px)",
     "uploadStateImages": "Upload state images",
@@ -384,13 +387,22 @@
     "imageLoadFailed": "Failed to load state image",
     "addState": "Add state",
     "removeState": "Remove",
+    "kottyStatePack": "Kotty States",
+    "kottyStateDescription": "Kotty preset collection for assistant states",
+    "echoearStatePack": "EchoEar States",
+    "echoearStateDescription": "EchoEar preset collection",
     "states": {
       "standby": "Standby",
+      "starting": "Starting",
+      "wifi_config": "WiFi Config",
+      "connecting": "Connecting",
       "listening": "Listening",
       "thinking": "Thinking",
       "speaking": "Speaking",
-      "sleeping": "Sleeping",
-      "error": "Error"
+      "activating": "Activating",
+      "upgrading": "Upgrading",
+      "audio_testing": "Audio Testing",
+      "fatal_error": "Fatal Error"
     }
   },
   "fontConfig": {

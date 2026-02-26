@@ -385,7 +385,13 @@ const getFontName = () => {
 }
 
 const getStateName = () => {
-  if (props.config.theme.state.type === 'custom') {
+  if (props.config.theme.state.type === 'preset') {
+    const names = {
+      state_kotty: 'Kotty States',
+      state_echoear: 'EchoEar States'
+    }
+    return names[props.config.theme.state.preset] || props.config.theme.state.preset
+  } else if (props.config.theme.state.type === 'custom') {
     const count = Object.keys(props.config.theme.state.custom?.images || {}).length
     return t('generateModal.customState', { count })
   }
@@ -468,7 +474,26 @@ const initializeFileList = () => {
   }
 
   // Agregar archivos de estados
-  if (props.config.theme.state.type === 'custom') {
+  if (props.config.theme.state.type === 'preset' && props.config.theme.state.preset) {
+    const presetStates = {
+      state_kotty: { size: '5KB', ext: 'png' },
+      state_echoear: { size: '5KB', ext: 'png' }
+    }
+    const meta = presetStates[props.config.theme.state.preset] || { size: '5KB', ext: 'png' }
+    const stateList = [
+      'standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error'
+    ]
+    stateList.forEach(state => {
+      fileList.value.push({
+        id: `state_${state}`,
+        name: `${state}.${meta.ext}`,
+        description: `Imagen de estado ${state}`,
+        icon: ImageIcon,
+        iconColor: 'text-blue-500',
+        size: meta.size
+      })
+    })
+  } else if (props.config.theme.state.type === 'custom') {
     const stateCustom = props.config.theme.state.custom
     const stateMap = stateCustom.stateMap || {}
     const fileMap = stateCustom.fileMap || {}

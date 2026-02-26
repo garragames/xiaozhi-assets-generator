@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6" v-if="safeModel">
     <!-- Selección de tipo de paquete de estados -->
     <div class="space-y-4">
       <div class="flex flex-wrap gap-3">
@@ -7,7 +7,7 @@
           @click="setStateType('none')"
           :class="[
             'px-4 py-2 border rounded-lg transition-colors',
-            modelValue.type === 'none'
+            safeModel.type === 'none'
               ? 'border-primary-500 bg-primary-50 text-primary-700'
               : 'border-gray-300 hover:border-gray-400'
           ]"
@@ -15,10 +15,21 @@
           {{ $t('stateConfig.noStatePack') }}
         </button>
         <button
+          @click="setStateType('preset')"
+          :class="[
+            'px-4 py-2 border rounded-lg transition-colors',
+            safeModel.type === 'preset'
+              ? 'border-primary-500 bg-primary-50 text-primary-700'
+              : 'border-gray-300 hover:border-gray-400'
+          ]"
+        >
+          {{ $t('stateConfig.presetStatePack') }}
+        </button>
+        <button
           @click="setStateType('custom')"
           :class="[
             'px-4 py-2 border rounded-lg transition-colors',
-            modelValue.type === 'custom'
+            safeModel.type === 'custom'
               ? 'border-primary-500 bg-primary-50 text-primary-700'
               : 'border-gray-300 hover:border-gray-400'
           ]"
@@ -26,12 +37,62 @@
           {{ $t('stateConfig.customStatePack') }}
         </button>
       </div>
-      <p v-if="modelValue.type === 'none'" class="text-sm text-gray-500">
+      <p v-if="safeModel.type === 'none'" class="text-sm text-gray-500">
         {{ $t('stateConfig.noStatePackDescription') }}
       </p>
     </div>
 
-    <div v-if="modelValue.type === 'custom'" class="space-y-6">
+    <div v-if="safeModel.type === 'preset'" class="space-y-4">
+      <h4 class="font-medium text-gray-900">{{ $t('stateConfig.selectPresetStatePack') }}</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          v-for="pack in presetStates"
+          :key="pack.id"
+          @click="selectPresetState(pack.id)"
+          :class="[
+            'border-2 rounded-lg p-4 cursor-pointer transition-all',
+            modelValue.preset === pack.id
+              ? 'border-primary-500 bg-primary-50'
+              : 'border-gray-200 hover:border-gray-300'
+          ]"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h5 class="font-medium text-gray-900">{{ pack.name }}</h5>
+              <p class="text-sm text-gray-600">{{ pack.description }}</p>
+              <div class="text-xs text-gray-500 mt-1">
+                {{ $t('stateConfig.size') }}: {{ pack.size.width }}px × {{ pack.size.height }}px
+              </div>
+            </div>
+            <div v-if="modelValue.preset === pack.id" class="flex-shrink-0 ml-3">
+              <div class="w-5 h-5 bg-primary-500 rounded-full flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista previa -->
+          <div class="grid grid-cols-3 gap-2">
+            <div
+              v-for="state in pack.preview"
+              :key="state"
+              class="bg-gray-100 rounded flex items-center justify-center p-2"
+            >
+              <img
+                :src="getPresetStateUrl(pack.id, state)"
+                :alt="state"
+                class="object-contain w-16 h-12 rounded"
+                @error="handleImageError"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="safeModel.type === 'custom'" class="space-y-6">
       <h4 class="font-medium text-gray-900">{{ $t('stateConfig.customStatePackConfig') }}</h4>
 
       <!-- Configuración básica -->
@@ -101,7 +162,7 @@
               @dragenter.prevent
               :class="[
                 'border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-colors aspect-video flex flex-col items-center justify-center',
-                modelValue.custom.images[state.key]
+                safeCustom.images[state.key]
                   ? 'border-green-300 bg-green-50'
                   : state.required
                     ? 'border-red-300 bg-red-50'
@@ -116,7 +177,7 @@
                 class="hidden"
               >
 
-              <div v-if="!modelValue.custom.images[state.key]" @click="$refs[state.key + 'Input'][0]?.click()">
+              <div v-if="!safeCustom.images[state.key]" @click="$refs[state.key + 'Input'][0]?.click()">
                 <svg class="w-6 h-6 text-gray-400 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
@@ -160,7 +221,8 @@ const { t } = useI18n()
 const props = defineProps({
   modelValue: {
     type: Object,
-    required: true
+    required: true,
+    default: () => ({ type: 'none', custom: {} })
   },
   displayWidth: {
     type: Number,
@@ -174,6 +236,65 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+// Lista base de estados (debe declararse antes de usar en safeCustom)
+const defaultStates = [
+  { key: 'standby', icon: '💤', required: true },
+  { key: 'starting', icon: '🚀' },
+  { key: 'wifi_config', icon: '📡' },
+  { key: 'connecting', icon: '🔗' },
+  { key: 'listening', icon: '👂' },
+  { key: 'thinking', icon: '🤔' },
+  { key: 'speaking', icon: '🗣️' },
+  { key: 'activating', icon: '✨' },
+  { key: 'upgrading', icon: '⬆️' },
+  { key: 'audio_testing', icon: '🎛️' },
+  { key: 'fatal_error', icon: '⚠️' }
+]
+
+const safeCustom = computed(() => {
+  const base = props.modelValue || {}
+  const c = base.custom || {}
+  return {
+    size: c.size || { width: Math.min(props.displayWidth, 320), height: Math.min(props.displayHeight, 240) },
+    images: c.images || {},
+    fileMap: c.fileMap || {},
+    stateMap: c.stateMap || {},
+    order: c.order || defaultStates.map(s => s.key)
+  }
+})
+
+const safeModel = computed(() => ({
+  type: props.modelValue?.type || 'none',
+  preset: props.modelValue?.preset || '',
+  custom: safeCustom.value
+}))
+
+// Inicializar estructura mínima para evitar undefined (solo si falta algo)
+const baseInit = props.modelValue || {}
+const needInit =
+  !baseInit.custom ||
+  !baseInit.custom.size ||
+  !baseInit.custom.images ||
+  !baseInit.custom.fileMap ||
+  !baseInit.custom.stateMap ||
+  !baseInit.custom.order
+
+if (needInit) {
+  const custom = safeCustom.value
+  const merged = {
+    type: baseInit.type || 'none',
+    preset: baseInit.preset || '',
+    custom: {
+      size: custom.size,
+      images: custom.images,
+      fileMap: custom.fileMap,
+      stateMap: custom.stateMap,
+      order: custom.order
+    }
+  }
+  emit('update:modelValue', { ...baseInit, ...merged })
+}
+
 // Utilidad para calcular hash del archivo
 const calculateFileHash = async (file) => {
   const buffer = await file.arrayBuffer()
@@ -182,23 +303,49 @@ const calculateFileHash = async (file) => {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-const defaultStates = [
-  { key: 'standby', icon: '💤', required: true },
-  { key: 'listening', icon: '👂' },
-  { key: 'thinking', icon: '🤔' },
-  { key: 'speaking', icon: '🗣️' }
+const presetStates = [
+  {
+    id: 'state_kotty',
+    name: t('stateConfig.kottyStatePack'),
+    description: t('stateConfig.kottyStateDescription'),
+    size: { width: 240, height: 240 },
+    ext: 'png',
+    preview: ['standby', 'listening', 'speaking']
+  },
+  {
+    id: 'state_echoear',
+    name: t('stateConfig.echoearStatePack'),
+    description: t('stateConfig.echoearStateDescription'),
+    size: { width: 160, height: 120 },
+    ext: 'png',
+    preview: ['starting', 'thinking', 'fatal_error']
+  }
 ]
 
 const stateList = computed(() => {
-  const customStates = props.modelValue.custom?.order || defaultStates.map(s => s.key)
   const labels = {
     standby: t('stateConfig.states.standby'),
+    starting: t('stateConfig.states.starting'),
+    wifi_config: t('stateConfig.states.wifi_config'),
+    connecting: t('stateConfig.states.connecting'),
     listening: t('stateConfig.states.listening'),
     thinking: t('stateConfig.states.thinking'),
     speaking: t('stateConfig.states.speaking'),
-    sleeping: t('stateConfig.states.sleeping'),
-    error: t('stateConfig.states.error')
+    activating: t('stateConfig.states.activating'),
+    upgrading: t('stateConfig.states.upgrading'),
+    audio_testing: t('stateConfig.states.audio_testing'),
+    fatal_error: t('stateConfig.states.fatal_error')
   }
+
+  // Cuando es preset, usar la lista fija de estados
+  if (props.modelValue.type === 'preset') {
+    return defaultStates.map(s => ({
+      ...s,
+      name: labels[s.key] || s.key
+    }))
+  }
+
+  const customStates = props.modelValue.custom?.order || defaultStates.map(s => s.key)
 
   return customStates.map((key) => {
     const base = defaultStates.find(s => s.key === key)
@@ -223,22 +370,57 @@ const setStateType = (type) => {
   if (props.modelValue.type === type) return
 
   const newValue = { ...props.modelValue, type }
+  const baseCustom = props.modelValue.custom || {}
+
   if (type === 'none') {
+    newValue.preset = ''
     newValue.custom = {
-      ...props.modelValue.custom,
-      images: props.modelValue.custom.images || {},
-      order: props.modelValue.custom.order || defaultStates.map(s => s.key)
+      ...baseCustom,
+      images: baseCustom.images || {},
+      order: baseCustom.order || defaultStates.map(s => s.key),
+      size: baseCustom.size || localCustom.value.size,
+      fileMap: baseCustom.fileMap || {},
+      stateMap: baseCustom.stateMap || {}
+    }
+  } else if (type === 'preset') {
+    newValue.preset = props.modelValue.preset || 'state_kotty'
+    newValue.custom = {
+      ...baseCustom,
+      images: baseCustom.images || {},
+      order: baseCustom.order || defaultStates.map(s => s.key),
+      size: baseCustom.size || localCustom.value.size,
+      fileMap: baseCustom.fileMap || {},
+      stateMap: baseCustom.stateMap || {}
     }
   } else if (type === 'custom') {
+    newValue.preset = ''
     newValue.custom = {
-      size: props.modelValue.custom.size || localCustom.value.size,
-      images: props.modelValue.custom.images || {},
-      fileMap: props.modelValue.custom.fileMap || {},
-      stateMap: props.modelValue.custom.stateMap || {},
-      order: props.modelValue.custom.order || defaultStates.map(s => s.key)
+      size: baseCustom.size || localCustom.value.size,
+      images: baseCustom.images || {},
+      fileMap: baseCustom.fileMap || {},
+      stateMap: baseCustom.stateMap || {},
+      order: baseCustom.order || defaultStates.map(s => s.key)
     }
   }
   emit('update:modelValue', newValue)
+}
+
+const selectPresetState = (id) => {
+  if (props.modelValue.preset === id) return
+  const baseCustom = props.modelValue.custom || {}
+  emit('update:modelValue', {
+    ...props.modelValue,
+    type: 'preset',
+    preset: id,
+    custom: {
+      ...baseCustom,
+      images: baseCustom.images || {},
+      order: baseCustom.order || defaultStates.map(s => s.key),
+      size: baseCustom.size || localCustom.value.size,
+      fileMap: baseCustom.fileMap || {},
+      stateMap: baseCustom.stateMap || {}
+    }
+  })
 }
 
 const handleFileSelect = (event, stateKey) => {
@@ -328,29 +510,47 @@ const removeImage = async (stateKey) => {
 }
 
 const getImagePreview = (stateKey) => {
-  const file = props.modelValue.custom.images[stateKey]
-  if (file instanceof File || file instanceof Blob) {
-    return URL.createObjectURL(file)
+  if (props.modelValue.type === 'preset') {
+    return getPresetStateUrl(props.modelValue.preset, stateKey)
+  } else {
+    const file = safeCustom.value.images?.[stateKey]
+    if (file instanceof File || file instanceof Blob) {
+      return URL.createObjectURL(file)
+    }
+    return null
   }
-  return null
+}
+
+const getPresetStateUrl = (packId, state) => {
+  const dir = packId
+  return `${import.meta.env.BASE_URL || '/'}static/${dir}/${state}.png`
 }
 
 const handleImageError = (event) => {
   console.warn(t('stateConfig.imageLoadFailed'), event.target.src)
+  // Intentar fallback a .gif si el .png falla
+  const src = event.target.getAttribute('src') || ''
+  if (src.endsWith('.png')) {
+    const fallback = src.replace('.png', '.gif')
+    event.target.setAttribute('src', fallback)
+    return
+  }
   event.target.style.display = 'none'
 }
 
 const addCustomState = () => {
   const key = `state_${Date.now().toString(16)}`
-  const newOrder = [...(props.modelValue.custom.order || stateList.value.map(s => s.key)), key]
+  const baseCustom = props.modelValue.custom || {}
+  const newOrder = [...(baseCustom.order || stateList.value.map(s => s.key)), key]
   emit('update:modelValue', {
     ...props.modelValue,
     custom: {
-      ...props.modelValue.custom,
+      ...baseCustom,
       order: newOrder,
-      images: { ...(props.modelValue.custom.images || {}) },
-      stateMap: { ...(props.modelValue.custom.stateMap || {}) },
-      fileMap: { ...(props.modelValue.custom.fileMap || {}) }
+      images: { ...(baseCustom.images || {}) },
+      stateMap: { ...(baseCustom.stateMap || {}) },
+      fileMap: { ...(baseCustom.fileMap || {}) },
+      size: baseCustom.size || localCustom.value.size
     }
   })
 }
@@ -399,9 +599,7 @@ watch(() => localCustom.value.size, (newSize) => {
 }, { deep: true })
 
 // Inicializar localCustom
-if (props.modelValue.custom.size) {
-  localCustom.value = {
-    size: { ...props.modelValue.custom.size }
-  }
+localCustom.value = {
+  size: { ...safeCustom.value.size }
 }
 </script>

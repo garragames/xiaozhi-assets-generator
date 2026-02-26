@@ -172,12 +172,13 @@ const config = ref({
     },
     state: {
       type: 'none',
+      preset: '',
       custom: {
         size: { width: 160, height: 120 },
         images: {},
         fileMap: {},
         stateMap: {},
-        order: ['standby', 'listening', 'thinking', 'speaking']
+        order: ['standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error']
       }
     },
     skin: {
@@ -410,7 +411,7 @@ const loadConfigFromStorage = async () => {
         st.custom.images = st.custom.images || {}
         st.custom.fileMap = st.custom.fileMap || {}
         st.custom.stateMap = st.custom.stateMap || {}
-        st.custom.order = st.custom.order || ['standby', 'listening', 'thinking', 'speaking']
+        st.custom.order = st.custom.order || ['standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error']
       }
       // Siempre comenzar desde el primer paso
       currentStep.value = 0
