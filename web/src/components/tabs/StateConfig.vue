@@ -228,7 +228,7 @@ const props = defineProps({
   },
   displayWidth: {
     type: Number,
-    default: 320
+    default: 240
   },
   displayHeight: {
     type: Number,
@@ -257,7 +257,7 @@ const safeCustom = computed(() => {
   const base = props.modelValue || {}
   const c = base.custom || {}
   return {
-    size: c.size || { width: Math.min(props.displayWidth, 320), height: Math.min(props.displayHeight, 240) },
+    size: c.size || { width: Math.min(props.displayWidth || 240, 240), height: Math.min(props.displayHeight || 240, 240) },
     images: c.images || {},
     fileMap: c.fileMap || {},
     stateMap: c.stateMap || {},
@@ -367,10 +367,10 @@ const stateList = computed(() => {
 })
 
 const localCustom = ref({
-  size: { width: Math.min(props.displayWidth, 320), height: Math.min(props.displayHeight, 240) }
+  size: { width: Math.min(props.displayWidth || 240, 240), height: Math.min(props.displayHeight || 240, 240) }
 })
 
-const maxCanvasWidth = computed(() => props.displayWidth || 320)
+const maxCanvasWidth = computed(() => props.displayWidth || 240)
 const maxCanvasHeight = computed(() => props.displayHeight || 240)
 
 const setStateType = (type) => {

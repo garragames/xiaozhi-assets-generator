@@ -131,7 +131,7 @@ const props = defineProps({
     default: () => ({
       model: '',
       display: {
-        width: 320,
+        width: 240,
         height: 240,
         color: 'RGB565'
       },
@@ -196,7 +196,7 @@ const ConfigForm = {
           value: this.config.display.width,
           min: 128,
           max: 800,
-          placeholder: '320',
+          placeholder: '240',
           onInput: (e) => { this.config.display.width = Number(e.target.value) }
         })
       ]),
@@ -238,7 +238,7 @@ const showManualEdit = ref(false)
 const customConfig = ref({
   model: '',
   display: {
-    width: 320,
+    width: 240,
     height: 240,
     color: 'RGB565'
   }
