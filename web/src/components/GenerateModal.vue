@@ -476,8 +476,8 @@ const initializeFileList = () => {
   // Agregar archivos de estados
   if (props.config.theme.state.type === 'preset' && props.config.theme.state.preset) {
     const presetStates = {
-      state_kotty: { size: '5KB', ext: 'png' },
-      state_echoear: { size: '5KB', ext: 'png' }
+      state_kotty: { size: '5KB', ext: 'gif' },
+      state_echoear: { size: '5KB', ext: 'gif' }
     }
     const meta = presetStates[props.config.theme.state.preset] || { size: '5KB', ext: 'png' }
     const stateList = [

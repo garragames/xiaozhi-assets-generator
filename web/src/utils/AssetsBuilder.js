@@ -544,10 +544,10 @@ class AssetsBuilder {
     const collection = []
     const defaultStates = ['standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error']
     const presetMeta = {
-      state_kotty: { size: { width: 240, height: 240 }, ext: 'png', states: [
+      state_kotty: { size: { width: 240, height: 240 }, ext: 'gif', states: [
         'standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error'
       ]},
-      state_echoear: { size: { width: 160, height: 120 }, ext: 'png', states: [
+      state_echoear: { size: { width: 160, height: 120 }, ext: 'gif', states: [
         'standby','starting','wifi_config','connecting','listening','thinking','speaking','activating','upgrading','audio_testing','fatal_error'
       ]}
     }
@@ -558,7 +558,7 @@ class AssetsBuilder {
       meta.states.forEach(name => {
         collection.push({
           name,
-          file: `${name}.${meta.ext}`,
+          file: `${name}.${meta.ext || 'png'}`,
           source: `preset:${state.preset}`,
           size: { ...meta.size }
         })
@@ -1397,15 +1397,17 @@ class AssetsBuilder {
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       return await response.arrayBuffer()
     }
-    try {
-      return await tryFetch('png')
-    } catch (errorPng) {
+    // Prefer GIF for presets de estados, luego PNG
+    const order = ['gif', 'png']
+    let lastError
+    for (const ext of order) {
       try {
-        return await tryFetch('gif')
-      } catch (errorGif) {
-        throw new Error(`Failed to load preset state: ${presetName}/${stateName} - png: ${errorPng.message}; gif: ${errorGif.message}`)
+        return await tryFetch(ext)
+      } catch (e) {
+        lastError = e
       }
     }
+    throw new Error(`Failed to load preset state: ${presetName}/${stateName} - ${lastError?.message || 'unknown'}`)
   }
 
   /**

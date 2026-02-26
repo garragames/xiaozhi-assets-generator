@@ -309,7 +309,7 @@ const presetStates = [
     name: t('stateConfig.kottyStatePack'),
     description: t('stateConfig.kottyStateDescription'),
     size: { width: 240, height: 240 },
-    ext: 'png',
+    ext: 'gif',
     preview: ['standby', 'listening', 'speaking']
   },
   {
@@ -317,10 +317,15 @@ const presetStates = [
     name: t('stateConfig.echoearStatePack'),
     description: t('stateConfig.echoearStateDescription'),
     size: { width: 160, height: 120 },
-    ext: 'png',
+    ext: 'gif',
     preview: ['starting', 'thinking', 'fatal_error']
   }
 ]
+
+const getPresetStateExt = (packId) => {
+  const meta = presetStates.find(p => p.id === packId)
+  return meta?.ext || 'png'
+}
 
 const stateList = computed(() => {
   const labels = {
@@ -523,7 +528,8 @@ const getImagePreview = (stateKey) => {
 
 const getPresetStateUrl = (packId, state) => {
   const dir = packId
-  return `${import.meta.env.BASE_URL || '/'}static/${dir}/${state}.png`
+  const ext = getPresetStateExt(packId)
+  return `${import.meta.env.BASE_URL || '/'}static/${dir}/${state}.${ext}`
 }
 
 const handleImageError = (event) => {
