@@ -79,11 +79,13 @@
               v-for="state in pack.preview"
               :key="state"
               class="bg-gray-100 rounded flex items-center justify-center p-2"
+              style="width: 120px; height: 120px;"
             >
               <img
                 :src="getPresetStateUrl(pack.id, state)"
                 :alt="state"
-                class="object-contain w-16 h-12 rounded"
+                class="object-contain rounded"
+                style="max-width: 100%; max-height: 100%;"
                 @error="handleImageError"
               />
             </div>
@@ -534,10 +536,15 @@ const getPresetStateUrl = (packId, state) => {
 
 const handleImageError = (event) => {
   console.warn(t('stateConfig.imageLoadFailed'), event.target.src)
-  // Intentar fallback a .gif si el .png falla
+  // Intentar fallback entre .png y .gif
   const src = event.target.getAttribute('src') || ''
   if (src.endsWith('.png')) {
     const fallback = src.replace('.png', '.gif')
+    event.target.setAttribute('src', fallback)
+    return
+  }
+  if (src.endsWith('.gif')) {
+    const fallback = src.replace('.gif', '.png')
     event.target.setAttribute('src', fallback)
     return
   }
